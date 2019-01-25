@@ -1,0 +1,8 @@
+{% extends "grading/base.html" %}
+
+{% block content %}
+    <p>Students Currently Listed under the teacher {{ teacher_students.teacher.first_name }}</p>
+    {% for student in teacher_students %}
+        <a href="{% url 'teacher-student-detail' student.pk %}"> Student ID :{{ student.student_id }}</a> <br>
+    {% endfor %}
+{% endblock %}
