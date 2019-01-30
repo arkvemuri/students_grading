@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'django.contrib.admin',
     'django.contrib.auth',
+    'django_tables2',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -180,8 +181,8 @@ SOCIAL_AUTH_PIPELINE = (
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
     'fields': 'id,name,email',
 }
-#SOCIAL_AUTH_USER_FIELDS = ['email', 'username']
-#SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
+SOCIAL_AUTH_USER_FIELDS = ['email', 'username']
+SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
 
 SOCIAL_AUTH_LOGIN_ERROR_URL = '/settings/'
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/settings/'
@@ -197,3 +198,4 @@ EMAIL_HOST_PASSWORD = config.get('EMAIL_PASS')
 
 
 AUTH_USER_MODEL = "users.User"
+DJANGO_TABLES2_TEMPLATE = "django_tables2/bootstrap4.html"
