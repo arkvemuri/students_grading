@@ -1,13 +1,16 @@
 from django.shortcuts import render,redirect, render_to_response
 from django.contrib import messages
-from .forms import UserRegistrationForm,UserUpdateForm,ProfileUpdateForm, \
-    TeacherRegistrationForm, StudentRegistrationForm, Student_GradesForm, GradingForm, CareerOptionForm
+from .tables import Student_GradesTable
+from .forms import UserRegistrationForm,UserUpdateForm,ProfileUpdateForm, SubjectScoresForm,\
+    TeacherRegistrationForm, StudentRegistrationForm, Student_GradesForm, GradingForm, CoursesForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AdminPasswordChangeForm, PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
+from requests import request
 from django.shortcuts import render, redirect
 from social_django.models import UserSocialAuth
+from django_tables2.views import SingleTableView
 from django.views.generic import (
     ListView,
     DetailView,
@@ -24,16 +27,12 @@ from django.shortcuts import render, get_object_or_404
 from .models import *
 from django.contrib.auth import authenticate, login
 import datetime
-#from multi_form_view import MultiFormView as MultiFormView
 
+from multi_form_view import MultiFormView as MultiFormView
+from django.views.generic.edit import FormView
 from django.urls import reverse_lazy
-# User = apps.get_model('users', 'User')
-# Subject = apps.get_model('users', 'Subject')
-# Student = apps.get_model('users', 'Student')
-# Teacher = apps.get_model('users', 'Teacher')
-# Teacher_Students = apps.get_model('users', 'Teacher_Students')
-# Student_Grades = apps.get_model('users', 'Student_Grades')
-# UserProfile = apps.get_model('users', 'UserProfile')
+from django_tables2 import RequestConfig
+from .tables import *
 
 
 @login_required
@@ -46,16 +45,22 @@ class SignUpView(TemplateView):
 class StudentSignUpView(CreateView):
     model = User
     form_class = StudentRegistrationForm
+
     template_name = 'users/signup_form.html'
 
+    def get_form_kwargs(self):
+        kw = super(StudentSignUpView, self).get_form_kwargs()
+        kw['request'] = self.request  # the trick!
+        return kw
     def get_context_data(self, **kwargs):
         kwargs['user_type'] = 'student'
+        self.get_form_class()
         return super().get_context_data(**kwargs)
 
     def form_valid(self, form):
         user = form.save()
         login(self.request, user,'django.contrib.auth.backends.ModelBackend')
-        messages.success(self.request, f'Your Student Account bas been created! You can login with username { username }! ')
+        messages.success(self.request, f'Your Student Account bas been created! You can login with username { user.username }! ')
         return redirect('student-list')
 
     success_url = '/'
@@ -64,6 +69,10 @@ class TeacherSignUpView(CreateView):
     form_class = TeacherRegistrationForm
     template_name = 'users/signup_form.html'
 
+    def get_form_kwargs(self):
+        kw = super(TeacherSignUpView, self).get_form_kwargs()
+        kw['request'] = self.request  # the trick!
+        return kw
     def get_context_data(self, **kwargs):
         kwargs['user_type'] = 'teacher'
         return super().get_context_data(**kwargs)
@@ -71,7 +80,7 @@ class TeacherSignUpView(CreateView):
     def form_valid(self, form):
         user = form.save()
         login(self.request, user, 'django.contrib.auth.backends.ModelBackend')
-        messages.success(self.request, f'Your Teacher Account bas been created! You can login with username { username }! ')
+        messages.success(self.request, f'Your Teacher Account bas been created! You can login with username { user.username }! ')
         return redirect('teacher-list')
     success_url = '/'
 
@@ -97,9 +106,6 @@ def loginUser(request):
     user = authenticate(request, username=username, password=password)
     if user is not None:
         login(request, user)
-    #else:
-        # Return an 'invalid login' error message.
-        #return redirect('error')
 
     return redirect('grading-home')
 
@@ -228,7 +234,6 @@ class StudentListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         student = self.request.user.student
-        print(student.pk)
         queryset = Student.objects.filter(user=self.request.user).first()
         return queryset
 
@@ -285,10 +290,21 @@ class StudentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 class StudentGradesView(TemplateView):
     template_name = 'users/grades.html'
 
-class StudentGradesListView(ListView):
+class StudentGradesListView(SingleTableView):
     model = Student_Grades
-    context_object_name = 'student_grades'
-    #ordering = ['-date_created']
+    template_name = 'users/student_grades_list.html'
+    table_class = Student_GradesTable
+    paginate_by = 2
+    #context_object_name = 'student_grades'
+
+    # def get_context_data(self, **kwargs):
+    #     context = super(StudentGradesListView, self).get_context_data(**kwargs)
+    #     student = Student.objects.filter(user=self.request.user).first()
+    #     table = Student_GradesTable(Student_Grades.objects.filter(student=student))
+    #
+    #     RequestConfig(self.request).configure(table)
+    #     return render(self.request, '/users/student_grades_list.html', {'table': table})
+    #     #return context
 
 class StudentGradesDetailView(DetailView):
     model = Student_Grades
@@ -302,15 +318,11 @@ class StudentGradesCreateView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super(StudentGradesCreateView, self) \
             .get_context_data(**kwargs)
-        #context['form'].fields['subject'].queryset = Subject.objects.values_list("subject_name", flat=True)
         context['form'].fields['student'].queryset = Teacher_Students.objects.values_list("student_id", flat=True)
 
         return context
 
     def form_valid(self, form):
-        print ('inside the Student Grades form validation')
-        #import pdb
-        #pdb.set_trace()
         subject = form.cleaned_data.get('subject')
 
         student = form.cleaned_data.get('student')
@@ -477,11 +489,17 @@ class SubjectListView(ListView):
     template_name = 'grading/home.html'
     context_object_name = 'subjects'
     paginate_by = 4
+
     #ordering = ['-date_created']
 
 class SubjectDetailView(DetailView):
-    model = Subject
-
+     model = Subject
+     #template_name = 'users/subject_detail.html'
+# class SubjectDetailView(SingleTableView):
+#     model = Subject
+#     template_name = 'users/subject_detail.html'
+#     table_class = SubjectTable
+#     paginate_by = 2
 
 class SubjectCreateView(LoginRequiredMixin, CreateView):
     model = Subject
@@ -519,6 +537,7 @@ class SubjectDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
             return True
         return False
 
+@login_required
 def grades_predictor(request):
 
     if request.method == 'POST':
@@ -543,16 +562,6 @@ def grades_predictor(request):
         f=GradingForm()
     return render(request, 'users/grading.html', {'form': f})
 
-def show_choices(request,pk):
-    if request.method == 'POST':
-        form = CareerOptionForm(request.POST)
-        if form.is_valid():
-            course_name = form.cleaned_data.get('course_name')
-            messages.success(request, f'You have selected Option { course_name }! ')
-            return redirect('career-choices', pk=pk)
-    else:
-        form = CareerOptionForm(request.GET)
-    return render(request, 'users/career_options.html',{'form': form})
 
 class UserSubjectListView(ListView):
     model = Subject
@@ -566,19 +575,129 @@ class UserSubjectListView(ListView):
         user = get_object_or_404(User, username=self.kwargs.get('username'))
         return Subject.objects.filter(username=user)
 
-# class MultipleFormsDemoView(MultiFormView):
-#     template_name = "users/career_options.html"
-#     form_classes = {'career': CareerOptionForm,
-#                     'grades': Student_GradesForm,
+
+@login_required
+def grades(request):
+    if request.user.is_student:
+        student = Student.objects.filter(user=request.user).first()
+        #queryset=Student_Grades.objects.filter(student=student).first()
+        #print (str(queryset.query))
+        table = Student_GradesTable(Student_Grades.objects.filter(student=student))
+    elif request.user.is_teacher:
+        table = Student_GradesTable(Student_Grades.objects.all())
+    RequestConfig(request).configure(table)
+    return render(request, 'users/list_student_grades.html', {'table': table})
+
+# def show_choices(request,pk=None):
+#     if request.method == 'POST' or request.method == 'GET':
+#         courses_form = CoursesForm(request.POST)
+#         subjectscores_form = SubjectScoresForm(request.POST)
+#         if courses_form.is_valid():
+#             course_name = courses_form.cleaned_data.get('course_name')
+#             messages.success(request, f'You have selected Option { course_name }! ')
+#             args = {'course_name': course_name}
+#             return reverse('career-select',pk=args)
+#     return render(request, 'users/career_options.html',{'courses_form': courses_form,'subjectscores_form':subjectscores_form},pk=pk)
+
+
+# def save_scores(request):
+#     if request.method == 'POST':
+#         subjectscores_form = SubjectScoresForm(request.POST)
+#         courses_form = CoursesForm(request.POST)
+#         if subjectscores_form.is_valid():
+#             #student_id = subjectscores_form.cleaned_data.get('student_id')
+#             gpa = subjectscores_form['GPA'].value()
+#             #subject = subjectscores_form.cleaned_data.get('subject')
+#             #score = subjectscores_form.cleaned_data.get('score')
+#             subjectscores_form.save()
+#             messages.success(request, f'Scores successfully saved your {{ gpa }}! ')
+#             return redirect('career-scores-save')
+#     else:
+#         subjectscores_form=SubjectScoresForm(request.GET)
+#         courses_form = CoursesForm(request.GET)
+#     return render(request, 'users/career_options.html',{'subjectscores_form': subjectscores_form,'courses_form': courses_form})
+
+
+class MainView(TemplateView):
+    template_name = 'users/career_options.html'
+
+    def get(self, request, *args, **kwargs):
+        courses_form = CoursesForm(self.request.GET or None)
+        subjectscores_form = SubjectScoresForm(self.request.GET or None)
+        context = self.get_context_data(**kwargs)
+        context['subjectscores_form'] = subjectscores_form
+        context['courses_form'] = courses_form
+        return self.render_to_response(context)
+
+    def post(self, request, *args, **kwargs):
+        courses_form = CoursesForm(self.request.POST)
+        subjectscores_form = SubjectScoresForm(self.request.POST)
+        context = self.get_context_data(**kwargs)
+        context['subjectscores_form'] = subjectscores_form
+        context['courses_form'] = courses_form
+        if courses_form.is_valid() and subjectscores_form.is_valid():
+            course_name = courses_form.cleaned_data.get('course_name')
+            messages.success(request, f'You have selected Option {course_name}! ')
+            context['course_name']= course_name
+            #return reverse('career-select', args)
+        return self.render_to_response(context)
+
+# class Courses_FormView(FormView):
+#     form_class = CoursesForm
+#     template_name = 'users/courses_list.html'
+#     success_url = '/'
+#
+#     def post(self, request, *args, **kwargs):
+#         courses_form = self.form_class(request.POST)
+#
+#         if courses_form.is_valid():
+#             course_name = self.courses_form.cleaned_data.get('course_name')
+#             messages.success(request, f'You have selected Option {course_name}! ')
+#             return self.render_to_response(
+#                 self.get_context_data(
+#                     success=True
+#                 )
+#             )
+#         else:
+#             return self.render_to_response(
+#                 self.get_context_data(
+#                     courses_form=courses_form,
+#                 )
+#             )
+# class SubjectScores_FormView(FormView):
+#     form_class = SubjectScoresForm
+#     template_name = 'users/courses_list.html'
+#     success_url = '/'
+#
+#     def post(self, request, *args, **kwargs):
+#         subjectscores_form = self.form_class(request.POST)
+#         #courses_form = CoursesForm()
+#         if subjectscores_form.is_valid():
+#             subjectscores_form.save()
+#             return self.render_to_response(
+#                 self.get_context_data(
+#                     success=True
+#                 )
+#             )
+#         else:
+#             return self.render_to_response(
+#                 self.get_context_data(
+#                     subjectscores_form=subjectscores_form
+#                 )
+#             )
+# class MultipleFormsView(MultiFormView):
+#     template_name = "users/courses_list.html"
+#     form_classes = {'courses_form': CoursesForm,
+#                     'subjectscores_form': SubjectScoresForm,
 #                     }
 #
 #     success_urls = {
-#         'career': reverse_lazy('contact-form-redirect'),
-#         'grades': reverse_lazy('teacher-student-grades-list'),
+#         'courses': reverse_lazy('career-choices'),
+#         'subjectscores': reverse_lazy('teacher-student-grades-list'),
 #     }
 #
-#     def career_form_valid(self, form):
+#     def courses_form_valid(self, form):
 #         'contact form processing goes in here'
 #
-#     def grades_form_valid(self, form):
+#     def subjectscores_form_valid(self, form):
 #         'subscription form processing goes in here'

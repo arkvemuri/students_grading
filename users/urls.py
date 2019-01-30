@@ -70,5 +70,11 @@ urlpatterns = [
     path('subject/<int:pk>/delete/', SubjectDeleteView.as_view(), name='subject-delete'),
 
     path('grading/', views.grades_predictor, name='grades-prediction'),
-    url(r'^career/<int:pk>', views.show_choices, name='career-choices'),
+    url(r'^career/', views.MainView.as_view(), name='career-choices'),
+    url(r'^grades/list/', views.grades, name='list-student-grades'),
+
+
+    #url(r'^career/select/', views.show_choices, name="career-select"),
+    #path('career/select/<int:pk>/', views.show_choices, name="career-select-pk"),
+    #url(r'^career/scores/save/', views.save_scores, name="career-scores-save"),
 ]

@@ -2,6 +2,7 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
+{{ course_name }}
     <div class="content-section">
         <form method="POST">
             {% csrf_token %}

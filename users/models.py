@@ -7,8 +7,6 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.utils.html import escape, mark_safe
 
-
-
 class User(AbstractUser):
      is_student = models.BooleanField(default=False)
      is_teacher = models.BooleanField(default=False)
@@ -85,6 +83,31 @@ class Subject(models.Model):
 
     def get_absolute_url(self):
         reverse('subject-detail', kwargs={'pk': self.pk})
+
+class SubjectScores(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    subject1 = models.CharField(max_length=15)
+    score1 = models.FloatField(max_length=6)
+    subject2 = models.CharField(max_length=15)
+    score2 = models.FloatField(max_length=6)
+    subject3 = models.CharField(max_length=15)
+    score3 = models.FloatField(max_length=6)
+    subject4 = models.CharField(max_length=15)
+    score4 = models.FloatField(max_length=6)
+    subject5 = models.CharField(max_length=15)
+    score5 = models.FloatField(max_length=6)
+    subject6 = models.CharField(max_length=15)
+    score6 = models.FloatField(max_length=6)
+    subject7 = models.CharField(max_length=15)
+    score7 = models.FloatField(max_length=6)
+
+    date_created = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return "%s" % (self.subject1)
+
+    def get_absolute_url(self):
+        reverse('subject-scores-detail', kwargs={'pk': self.pk})
 
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)

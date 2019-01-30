@@ -1,18 +1,5 @@
 {% extends "grading/base.html" %}
-
+{% load render_table from django_tables2 %}
 {% block content %}
-    {% for student in student_grades %}
-        Student ID : {{ student.pk }} <br>
-        Student ID : {{ student.student_id }} <br>
-        Subject : {{ student.subject }}<br>
-        SA1  :{{ student.SA1 }}<br>
-        SA2  :{{ student.SA2 }}<br>
-        SA3  :{{ student.SA3 }}<br>
-
-    <div class="form-group">
-        <a class="btn btn-outline-info" href="{% url 'teacher-student-grades-update' student.pk %}">Update</a>
-        <a class="btn btn-outline-info" href="{% url 'teacher-student-grades-delete' student.pk %}">Delete</a>
-    </div>
-    {% endfor %}
-
+{% render_table table %}
 {% endblock %}

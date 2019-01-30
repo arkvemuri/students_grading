@@ -1,5 +1,5 @@
 {% extends "grading/base.html" %}
-
+{% load render_table from django_tables2 %}
 {% block content %}
 {% if user.is_authenticated %}
     <div class="content-section">

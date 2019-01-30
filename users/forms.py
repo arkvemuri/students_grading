@@ -1,10 +1,13 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import User, Student, Teacher, UserProfile, School,  Student_Grades, Subject, Teacher_Students, Courses
+from .models import User, Student, Teacher, UserProfile, School,  Student_Grades, Subject, Teacher_Students, Courses,SubjectScores
 from django.db import transaction
 from django.forms import ModelChoiceField
 from django.utils.html import mark_safe
+from django.urls import reverse
 from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Fieldset, Button, ButtonHolder, Submit
+from crispy_forms.bootstrap import *
 
 class UserRegistrationForm(UserCreationForm):
     email = forms.EmailField()
@@ -68,8 +71,10 @@ class StudentRegistrationForm(UserCreationForm):
     country = forms.CharField(required=False,max_length=20, initial='India')
 
     def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
         super(StudentRegistrationForm, self).__init__(*args, **kwargs)
         self.fields['username'].widget.attrs['style'] = "width:15rem"
+        self.fields['username'].initial=self.request.user.username
         self.fields['username'].help_text = False
         self.fields['password1'].widget.attrs['style'] = "width:15rem"
         self.fields['password2'].widget.attrs['style'] = "width:15rem"
@@ -170,7 +175,9 @@ class TeacherRegistrationForm(UserCreationForm):
     school_id = forms.HiddenInput()
 
     def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
         super(TeacherRegistrationForm, self).__init__(*args, **kwargs)
+        self.fields['username'].initial = self.request.user.username
         self.fields['username'].help_text=False
         self.fields['username'].widget.attrs['style'] = "width:15rem"
         self.fields['password1'].widget.attrs['style'] = "width:15rem"
@@ -207,10 +214,6 @@ class TeacherUpdateForm(forms.ModelForm):
         model = User
         fields = ['username', 'email','first_name', 'last_name', 'grade','school']
 
-# class SubjectModelChoiceField(ModelChoiceField):
-#     def label_from_instance(self, obj):
-#         return "Subject #%s) %s" % (obj.id, obj.name)
-
 class Student_GradesForm(forms.ModelForm):
     student = forms.ModelChoiceField(queryset=Teacher_Students.objects.all(),to_field_name='student_id')
     subject = forms.ModelChoiceField(queryset=Subject.objects.all())
@@ -228,31 +231,46 @@ class Student_GradesForm(forms.ModelForm):
         self.fields['SA3'].widget.attrs['style'] = "width:15rem"
         self.fields['teacher'].widget.attrs['style'] = "width:15rem"
 
-
     class Meta:
         model = Student_Grades
         fields = '__all__'
 
-class MultipleForm(forms.Form):
-    action = forms.CharField(max_length=60, widget=forms.HiddenInput())
+class SubjectScoresForm(forms.ModelForm):
+    class Meta:
+        model = Student
+        fields = ['GPA']
+        # fields = ['student','subject1','score1','subject2','score2',
+        #             'subject4', 'score4', 'subject3','score3',
+        #           'subject5', 'score5','subject6','score6',
+        #           'subject7', 'score7',]
 
-# CAREER_CHOICES= [
-#     ('1', 'Arts'),
-#     ('2', 'Commerce'),
-#     ('3', 'Non-Medical'),
-#     ('4', 'Medical'),
-#     ('5', 'Mathematics'),
-#     ('6', 'IT'),
-#     ]
-
-
-class CareerOptionForm(forms.Form):
     def __init__(self, *args, **kwargs):
-        course_names = kwargs.pop('course_name', Courses.objects.all())
-        super(CareerOptionForm, self).__init__(*args, **kwargs)
-        choices = [(obj.pk, obj.course_name) for obj in course_names]
-        print(choices)
-        self.fields['course_name'] = forms.ChoiceField(
-            label='Select Your Favorite Course',
-            choices=choices, widget=forms.RadioSelect)
+        super(SubjectScoresForm, self).__init__(*args, **kwargs)
+        #self.fields['student_id'].widget.attrs['style'] = "width:15rem"
+        self.fields['GPA'].widget.attrs['style'] = "width:15rem"
+        self.helper = FormHelper(self)
+        self.fields['GPA'].required=False
+        self.helper.add_input(Submit('submit', 'Recommend'))
 
+class CoursesForm(forms.ModelForm):
+    courses = Courses.objects.all()
+    choices = [(obj.pk, obj.course_name) for obj in courses]
+    course_name = forms.TypedChoiceField(
+        label="Select your Course",
+        choices=choices,
+        coerce=lambda x: int(x),
+        widget=forms.RadioSelect,
+        required=True,
+    )
+
+    class Meta:
+        model = Courses
+        fields = ['course_name']
+
+    def __init__(self, *args, **kwargs):
+        super(CoursesForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        #self.helper.add_input(Submit('submit', 'Select'))
+        self.helper.layout = Layout(
+            Div(InlineRadios('course_name')),
+        )
