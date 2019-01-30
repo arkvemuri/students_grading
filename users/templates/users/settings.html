@@ -2,12 +2,6 @@
 
 {% block content %}
     <h2>Settings</h2>
-    {{ facebook_login.user.email }}
-    {{ facebook_login.user.username }}
-    {{ facebook_login.extra_params }}
-
-    {{ github_login.user.email }}
-
 
     {% if github_login %}
         <h3>GitHub</h3>
@@ -21,7 +15,7 @@
 
     {% if facebook_login %}
         <h3>Facebook</h3>
-        <p>Connected as <a href="https://facebook.com/{{ facebook_login.extra_data.id }}/" target="_blank">{{ facebook_login.extra_data.id }}</a></p>
+        <p>Connected as <a href="https://facebook.com/{{ facebook_login.extra_data.id }}/" target="_blank">{{ facebook_login.user.username }}</a></p>
     {% endif %}
 
     {% if not facebook_login and not twitter_login and not github_login %}
