@@ -1,0 +1,21 @@
+{% extends "grading/base.html" %}
+{% load render_table from django_tables2 %}
+{% block content %}
+{% if user.is_authenticated %}
+    <div class="content-section">
+        <h4> Subject Details</h4>
+        Subject Name: {{ subject.subject_name }} <br>
+        Subject Description: {{ subject.subject_desc }} <br>
+        School  :{{ subject.school }} <br>
+        Grade : {{ subject.grade }} <br>
+    </div>
+    {% if user.is_superuser %}
+        <div class="content-section">
+            <h3>Manage Subjects</h3>
+            <a class="btn btn-outline-info mb-4" href="{% url 'subject-update' object.id %}">Update {{ subject.subject_name }} Details</a>
+            <a class="btn btn-outline-info mb-4" href="{% url 'subject-delete' object.id %}">Delete {{ subject.subject_name }} Subject</a>
+        </div>
+    {% endif %}
+{% endif %}
+
+{% endblock %}

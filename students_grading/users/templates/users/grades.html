@@ -1,0 +1,9 @@
+{% extends "grading/base.html" %}
+
+
+{% block content %}
+  <h2>Student Grades Management</h2>
+
+  <a href="{% url 'teacher-student-grades-list' %}" class="btn btn-student btn-lg" role="button">List Grades</a>
+  <a href="{% url 'teacher-student-grades-new' %}" class="btn btn-teacher btn-lg" role="button">Enter Grades</a>
+{% endblock %}

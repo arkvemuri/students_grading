@@ -1,0 +1,14 @@
+*.pyc
+.bash_history
+.bash_logout
+.bashrc
+.cache/
+.lesshst
+.profile
+.python_history
+.ssh/
+.sudo_as_admin_successful
+.viminfo
+.wget-hsts
+students_grading/venv/*
+
