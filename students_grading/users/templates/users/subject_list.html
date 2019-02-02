@@ -1,0 +1,7 @@
+{% extends "grading/base.html" %}
+
+{% block content %}
+    {% for subject in subjects %}
+        Subject Name :{{ subject.subject_name }}
+    {% endfor %}
+{% endblock %}

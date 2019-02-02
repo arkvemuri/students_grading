@@ -1,0 +1,20 @@
+{% extends "grading/base.html" %}
+
+{% block content %}
+{% if user.is_authenticated and user.is_teacher or user.is_superuser %}
+    <div class="content-section">
+        <h4> Student Details</h4>
+        Teacher First Name: {{ student.first_name }} <br>
+        Teacher Last Name: {{ student.last_name }} <br>
+        School  :{{ teacher.school }} <br>
+        Grade : {{ teacher.grade }} <br>
+    </div>
+
+    <div class="content-section">
+        <h3>Edit Information</h3>
+        <a class="btn btn-outline-info mb-4" href="{% url 'teacher-update' teacher.pk %}">Update {{ teacher.first_name }} Details</a>
+    </div>
+
+{% endif %}
+
+{% endblock %}
