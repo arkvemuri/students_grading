@@ -10,5 +10,5 @@
 .sudo_as_admin_successful
 .viminfo
 .wget-hsts
-students_grading/venv/*
+venv/*
 
