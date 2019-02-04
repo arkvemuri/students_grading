@@ -12,6 +12,11 @@ kiwisolver==1.0.1
 msrest==0.6.3
 oauthlib==3.0.0
 django-crispy-forms==1.7.2
+django-multi-form-view==2.0.0
+django-tables2==2.0.4
+django-tables2-bootstrap4==2.0.0b5
+django-tables2-wsgi-fix==0.16.0.dev0
+json2html==1.2.1
 Pillow==5.4.1
 json2html==1.2.1
 patsy==0.5.1
