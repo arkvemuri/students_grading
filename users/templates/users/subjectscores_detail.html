@@ -1,0 +1,18 @@
+{% extends "grading/base.html" %}
+{% load render_table from django_tables2 %}
+{% block content %}
+{% if user.is_authenticated %}
+    <div class="content-section">
+        <h4> Subject Scores Details</h4>
+        Subject 1: {{ subject.subject1 }} <br>
+        Subject 2: {{ subject.subject2 }} <br>
+        Subject 3: {{ subject.subject3 }} <br>
+        Subject 4 :{{ subject.subject4 }} <br>
+        Subject 5 :{{ subject.subject5 }} <br>
+        Subject 6 :{{ subject.subject6 }} <br>
+        Subject 7 :{{ subject.subject7 }} <br>
+    </div>
+
+{% endif %}
+
+{% endblock %}

@@ -4,19 +4,9 @@
 {% block content %}
 
     <div class="content-section">
-        <form action="{% url 'career-select' %}" method="POST">
-            {% csrf_token %}
-            <fieldset class="form-group">
-                <legend class="border-bottom mb-4">
-                    {% crispy courses_form courses_form.helper %}
-                </legend>
-            </fieldset>
-            <!--<div class="form-group">-->
-                <!--<button class="btn btn-outline-info" type="submit">Select</button>-->
-            <!--</div>-->
-        </form>
+
         <h4> Enter Student Details</h4>
-        <form action="{% url 'career-scores-save' %}" method="POST">
+        <form action="{% url 'subject-scores-save' %}" method="POST">
             {% csrf_token %}
             <fieldset class="form-group">
                 <legend class="border-bottom mb-4">

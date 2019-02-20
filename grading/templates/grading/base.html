@@ -44,7 +44,7 @@
             <!-- Navbar Right Side -->
                 <div class="navbar-nav">
                     {% if user.is_authenticated %}
-		    {% if not user.is_teacher and not user.is_student %}
+		    {% if not user.is_teacher and not user.is_student and not user.is_superuser %}
                         <a class="nav-item nav-link" href="{% url 'signup' %}">Signup</a>
 		    {% endif %}
                         {% if user.is_superuser  %}
@@ -52,6 +52,7 @@
                             <a class="nav-item nav-link" href="{% url 'teacher_signup' %}">Add Teacher</a>
                         {% endif %}
                     {% if user.is_teacher %}
+                        <a class="nav-item nav-link" href="{% url 'subject-scores-new' %}">Student Subjects</a>
                         <a class="nav-item nav-link" href="{% url 'teacher_student_link' %}">Link Students</a>
                         <a class="nav-item nav-link" href="{% url 'teacher-student-grades' %}">Grades</a>
                     {% endif %}

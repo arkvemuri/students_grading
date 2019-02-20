@@ -9,7 +9,7 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 
-from users.models import User, Student, Teacher, Student_Grades, Teacher_Students, Subject
+from users.models import User, Student, Teacher, Student_Grades, Teacher_Students, Subject,SubjectScores
 from django.template import RequestContext
 import datetime
 
@@ -40,6 +40,7 @@ def home(request):
             if Student.objects.filter(user=user).exists():
                 student=Student.objects.filter(user=user).first()
                 args['student'] = student
+                args['subjectscores'] = SubjectScores.objects.filter(student_id=student)
             else:
                 pass
 
@@ -59,6 +60,7 @@ def home(request):
         raise TypeError('Teacher doesnt exist')
     except User.DoesNotExist:
         raise TypeError('User doesnt exist')
+
 
     if request.user.is_authenticated:
         if request.user.is_student:

@@ -6,15 +6,15 @@
         <h4> Student Details</h4>
         Student First Name: {{ student.first_name }} <br>
         Student Last Name: {{ student.last_name }} <br>
-        School  :{{ student.school }} <br>
+        School  :{{ student.school_id }} <br>
         Grade : {{ student.grade }} <br>
     </div>
-
-    <div class="content-section">
-        <h3>Edit Information</h3>
-        <a class="btn btn-outline-info mb-4" href="{% url 'student-update' student.pk %}">Update {{ student.first_name }} Details</a>
-    </div>
-
+    {% if user.is_authenticated and not user.is_superuser %}
+        <div class="content-section">
+            <h3>Edit Information</h3>
+            <a class="btn btn-outline-info mb-4" href="{% url 'student-update' student.pk %}">Update {{ student.first_name }} Details</a>
+        </div>
+    {% endif %}
 {% endif %}
 
 {% endblock %}

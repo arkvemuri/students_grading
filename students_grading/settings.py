@@ -28,7 +28,7 @@ SECRET_KEY = config['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['www.studentsgrading.co.in']
+ALLOWED_HOSTS = ['www.studentsgrading.co.in','localhost','studentsgrading.appspot.com']
 
 
 # Application definition
@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'django.contrib.admin',
     'django.contrib.auth',
+    'reset_migrations',
     'django_tables2',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -69,6 +70,7 @@ AUTHENTICATION_BACKENDS = (
     'social_core.backends.google.GoogleOpenId',
     'social_core.backends.google.GoogleOAuth2',
     'django.contrib.auth.backends.ModelBackend',
+    #'django.db.backends.mysql',
 )
 
 ROOT_URLCONF = 'students_grading.urls'
@@ -84,7 +86,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-
                 'social_django.context_processors.backends',  # <--
                 'social_django.context_processors.login_redirect', # <--
             ],
@@ -94,16 +95,42 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'students_grading.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'gradingdb.sqlite3'),
+# [START db_setup]
+if os.getenv('GAE_APPLICATION', None):
+    # Running on production App Engine, so connect to Google Cloud SQL using
+    # the unix socket at /cloudsql/<your-cloudsql-connection string>
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'HOST': '/cloudsql/studentsgrading:asia-south1:students-grading',
+            'USER': 'rkvemuri',
+            'PASSWORD': 'Ananth@2019',
+            'NAME': 'students-grading',
+        }
     }
-}
+
+else:
+    # Running locally so connect to either a local MySQL instance or connect to
+    # Cloud SQL via the proxy. To start the proxy via command line:
+    #
+    #     $ cloud_sql_proxy -instances=[INSTANCE_CONNECTION_NAME]=tcp:3306
+    #
+    # See https://cloud.google.com/sql/docs/mysql-connect-proxy
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'HOST': 'localhost',
+            'PORT': '3306',
+            'NAME': 'students_grading',
+            'USER': 'rkvemuri',
+            'PASSWORD': 'Ananth@2019',
+        }
+    }
+# [END db_setup]
+
+
 
 
 # Password validation
@@ -142,6 +169,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
+#STATIC_URL = 'https://storage.googleapis.com/students_grading/static/'
 STATIC_URL = '/static/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

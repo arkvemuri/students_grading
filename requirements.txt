@@ -11,6 +11,7 @@ isodate==0.6.0
 joblib==0.12.5
 kiwisolver==1.0.1
 msrest==0.6.3
+mysqlclient
 oauthlib==3.0.0
 django-crispy-forms==1.7.2
 django-multi-form-view==2.0.0

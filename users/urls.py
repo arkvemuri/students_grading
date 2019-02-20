@@ -27,6 +27,9 @@ from .views import(
     SubjectCreateView,
     SubjectDeleteView,
     SubjectUpdateView,
+    SubjectScoresListView,
+    SubjectScoresDetailView,
+    SubjectScoresCreateView,
     UserSubjectListView,
     TeacherStudentListView,
     TeacherStudentDetailView,
@@ -62,6 +65,10 @@ urlpatterns = [
     url(r'^teacher/(?P<pk>[\w-]+)/delete/', TeacherDeleteView.as_view(), name='teacher-delete'),
     path('teacher/<int:pk>/', TeacherDetailView.as_view(), name='teacher-detail'),
 
+    path('subject/scores', SubjectScoresListView.as_view(), name='subject-scores-list'),
+    path('subject/scores/<int:pk>', SubjectScoresDetailView.as_view(), name='subject-scores-detail'),
+    #url(r'^subject/select/', views.show_choices, name="career-select"),
+    url(r'^subject/scores/new/', SubjectScoresCreateView.as_view(), name="subject-scores-new"),
 
     path('subject/', SubjectListView.as_view(), name='subject-list'),
     path('subject/new/', SubjectCreateView.as_view(), name='subject-create'),
@@ -74,7 +81,7 @@ urlpatterns = [
     url(r'^grades/list/', views.grades, name='list-student-grades'),
 
 
-    #url(r'^career/select/', views.show_choices, name="career-select"),
+
     #path('career/select/<int:pk>/', views.show_choices, name="career-select-pk"),
-    #url(r'^career/scores/save/', views.save_scores, name="career-scores-save"),
+
 ]

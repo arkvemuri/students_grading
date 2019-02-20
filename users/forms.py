@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import User, Student, Teacher, UserProfile, School,  Student_Grades, Subject, Teacher_Students, Courses,SubjectScores
+from .models import User, Student, Teacher, UserProfile, School,  Student_Grades, Subject, Teacher_Students, SubjectScores
 from django.db import transaction
 from django.forms import ModelChoiceField
 from django.utils.html import mark_safe
@@ -49,13 +49,15 @@ class GradingForm(forms.Form):
         self.fields['schoolsup_yes'].widget.attrs['style'] = "width:10rem"
         self.fields['higher_yes'].widget.attrs['style'] = "width:10rem"
 
+def get_choices():
+    return [(e.id, e.description) for e in School.objects.all()]
+
 class StudentRegistrationForm(UserCreationForm):
     #username = forms.RegexField(label='Username', max_length=30, regex=r'^[\w-]+$', error_messages='This value must contain only letters, numbers, hyphens and underscores.')
     first_name = forms.CharField(max_length=15, initial='Abhinav')
     last_name = forms.CharField(max_length=15, initial='Vemuri')
-    email = forms.EmailField(max_length=20, initial='abhi@gmail.com')
-    schoolname = forms.CharField(max_length=50, initial='Oakridge International School (Newton Campus)', label='Your School')
-    school_id = forms.HiddenInput()
+    email = forms.EmailField(max_length=30, initial='abhi@gmail.com')
+    school_id = forms.ModelChoiceField(queryset=School.objects.all(),empty_label=None,label='Your School') #CharField(max_length=50, initial='Oakridge International School (Newton Campus)', label='Your School')
     student_id = forms.CharField(max_length=8, initial='15H7115', label=' Student ID')
     grade = forms.CharField(max_length=2, initial='X')
     section = forms.CharField(max_length=1, initial='A')
@@ -108,13 +110,15 @@ class StudentRegistrationForm(UserCreationForm):
 
     @transaction.atomic
     def save(self):
+        #import pdb
+        #pdb.set_trace()
         user = super().save(commit=False)
         user.is_student = True
         user.email =self.cleaned_data.get('email')
         user.save()
 
-        school_name = self.cleaned_data.get('schoolname')
-        school = School.objects.filter(school_name=school_name).first()
+        school = self.cleaned_data.get('school_id')
+        #school = School.objects.filter(school_id=school_id).first()
 
         student_id = self.cleaned_data.get('student_id')
 
@@ -135,7 +139,7 @@ class StudentRegistrationForm(UserCreationForm):
         country = self.cleaned_data.get('country')
 
 
-        student = Student.objects.create(user=user,school=school,school_name=school_name,
+        student = Student.objects.create(user_id=user.pk,
                                         student_id=student_id,
                                         first_name=first_name,
                                         last_name=last_name,
@@ -152,6 +156,7 @@ class StudentRegistrationForm(UserCreationForm):
                                         city=city,
                                         state=state,
                                         country=country,
+                                        school_id=school,
                                         )
 
 
@@ -171,8 +176,8 @@ class TeacherRegistrationForm(UserCreationForm):
     first_name = forms.CharField(max_length=30, initial='Ramakrishna')
     last_name = forms.CharField(max_length=30, initial='Vemuri')
     grade = forms.CharField(max_length=2, initial='X')
-    schoolname = forms.CharField(max_length=50, initial='Oakridge International School (Newton Campus)', label='Your School')
-    school_id = forms.HiddenInput()
+    school = forms.ModelChoiceField(queryset=School.objects.all(), empty_label=None,label='Your School')
+    #school_id = forms.HiddenInput()
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
@@ -195,9 +200,9 @@ class TeacherRegistrationForm(UserCreationForm):
         user.is_teacher = True
         user.email = self.cleaned_data.get('email')
         user.save()
-        school_name = self.cleaned_data.get('schoolname')
-        school = School.objects.filter(school_name=school_name).first()
-        teacher = Teacher.objects.create(user=user, school=school)
+        school = self.cleaned_data.get('school')
+        #school = School.objects.filter(school_name=school_name).first()
+        teacher = Teacher.objects.create(user=user, school_id=school)
 
         if commit:
             user.save()
@@ -237,40 +242,56 @@ class Student_GradesForm(forms.ModelForm):
 
 class SubjectScoresForm(forms.ModelForm):
     class Meta:
-        model = Student
-        fields = ['GPA']
+        model = SubjectScores
+        fields = ['student','subject'] #,'subject2','subject3','subject4', 'subject5', 'subject6','subject7']
+
         # fields = ['student','subject1','score1','subject2','score2',
-        #             'subject4', 'score4', 'subject3','score3',
+        #           'subject3','score3','subject4', 'score4',
         #           'subject5', 'score5','subject6','score6',
-        #           'subject7', 'score7',]
+        #           'subject7', 'score7']
 
     def __init__(self, *args, **kwargs):
         super(SubjectScoresForm, self).__init__(*args, **kwargs)
-        #self.fields['student_id'].widget.attrs['style'] = "width:15rem"
-        self.fields['GPA'].widget.attrs['style'] = "width:15rem"
+
+        self.fields['subject'].widget.attrs['style'] = "width:15rem"
+        #self.fields['subject'].required = False
+        # self.fields['subject2'].widget.attrs['style'] = "width:15rem"
+        # self.fields['subject2'].required = False
+        # self.fields['subject3'].widget.attrs['style'] = "width:15rem"
+        # self.fields['subject3'].required = False
+        # self.fields['subject4'].widget.attrs['style'] = "width:15rem"
+        # self.fields['subject4'].required = False
+        # self.fields['subject5'].widget.attrs['style'] = "width:15rem"
+        # self.fields['subject5'].required = False
+        # self.fields['subject6'].widget.attrs['style'] = "width:15rem"
+        # self.fields['subject6'].required = False
+        # self.fields['subject7'].widget.attrs['style'] = "width:15rem"
+        # self.fields['subject7'].required = False
+
         self.helper = FormHelper(self)
-        self.fields['GPA'].required=False
-        self.helper.add_input(Submit('submit', 'Recommend'))
 
-class CoursesForm(forms.ModelForm):
-    courses = Courses.objects.all()
-    choices = [(obj.pk, obj.course_name) for obj in courses]
-    course_name = forms.TypedChoiceField(
-        label="Select your Course",
-        choices=choices,
-        coerce=lambda x: int(x),
-        widget=forms.RadioSelect,
-        required=True,
-    )
+        #self.helper.add_input(Submit('submit', 'Recommend'))
 
-    class Meta:
-        model = Courses
-        fields = ['course_name']
-
-    def __init__(self, *args, **kwargs):
-        super(CoursesForm, self).__init__(*args, **kwargs)
-        self.helper = FormHelper(self)
-        #self.helper.add_input(Submit('submit', 'Select'))
-        self.helper.layout = Layout(
-            Div(InlineRadios('course_name')),
-        )
+# class CoursesForm(forms.ModelForm):
+#     courses = Courses.objects.all()
+#     choices = [(obj.pk, obj.course_name) for obj in courses]
+#     #choices={"course_name","Mathematics"}
+#     course_name = forms.TypedChoiceField(
+#         label="Select your Course",
+#         choices=choices,
+#         coerce=lambda x: int(x),
+#         widget=forms.RadioSelect,
+#         required=True,
+#     )
+#
+#     class Meta:
+#         model = Courses
+#         fields = ['course_name']
+#
+#     def __init__(self, *args, **kwargs):
+#         super(CoursesForm, self).__init__(*args, **kwargs)
+#         self.helper = FormHelper(self)
+#         #self.helper.add_input(Submit('submit', 'Select'))
+#         self.helper.layout = Layout(
+#             Div(InlineRadios('course_name')),
+#         )

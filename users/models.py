@@ -19,13 +19,13 @@ class Courses(models.Model):
     course_link=models.CharField(max_length=100)
 
     def __str__(self):
-        return self.course_name
+        return (self.course_name,self.course_link)
 
     def get_absolute_url(self):
         return reverse('course-detail', kwargs={'pk': self.pk})
 
 class School(models.Model):
-    school_name = models.CharField(max_length=40, default='Oakridge International School (Newton Campus)')
+    school_name = models.CharField(max_length=60, default='Oakridge International School (Newton Campus)')
     school_id = models.CharField(max_length=8, primary_key=True)
     date_created = models.DateTimeField(default=timezone.now)
     address = models.CharField(max_length=40, default='Nanakramguda Road, Cyberabad, Khajaguda, Manikonda')
@@ -41,12 +41,12 @@ class School(models.Model):
         return reverse('school-detail', kwargs={'pk': self.pk})
 
 class Student(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, unique=True)
+    student_id = models.CharField(max_length=8, primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    school_id = models.ForeignKey(School, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=30, default='Abhinav')
     last_name = models.CharField(max_length=30, default='Vemuri')
     email = models.CharField(max_length=30, default='abhi@gmail.com')
-    school = models.ForeignKey(School, max_length=8, on_delete=models.CASCADE)
-    school_name = models.CharField(max_length=40, default='Oakridge International School')
     grade = models.CharField(max_length=2, default='X')
     gender = models.CharField(max_length=1,default='M')
     section = models.CharField(max_length=1,default='A')
@@ -61,7 +61,6 @@ class Student(models.Model):
     state = models.CharField(max_length=15,default='Telangana')
     country = models.CharField(max_length=15,default='India')
     date_created = models.DateTimeField(default=timezone.now)
-    student_id = models.CharField(max_length=8, primary_key=True)
     GPA = models.FloatField(max_length=5, default=0.0)
 
     def __str__(self):
@@ -70,13 +69,13 @@ class Student(models.Model):
     def get_absolute_url(self):
         return reverse('student-detail', kwargs={'pk': self.pk})
 
+
 class Subject(models.Model):
     subject_name = models.CharField(max_length=15)
     subject_desc = models.CharField(max_length=30)
-    school = models.CharField(max_length=30)
+    school_id = models.ForeignKey(School, on_delete=models.CASCADE)
     grade = models.CharField(max_length=2)
     date_created = models.DateTimeField(default=timezone.now)
-    #student = models.ForeignKey(Student,on_delete=models.CASCADE)
 
     def __str__(self):
         return "%s" % (self.subject_name)
@@ -86,35 +85,26 @@ class Subject(models.Model):
 
 class SubjectScores(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    subject1 = models.CharField(max_length=15)
-    score1 = models.FloatField(max_length=6)
-    subject2 = models.CharField(max_length=15)
-    score2 = models.FloatField(max_length=6)
-    subject3 = models.CharField(max_length=15)
-    score3 = models.FloatField(max_length=6)
-    subject4 = models.CharField(max_length=15)
-    score4 = models.FloatField(max_length=6)
-    subject5 = models.CharField(max_length=15)
-    score5 = models.FloatField(max_length=6)
-    subject6 = models.CharField(max_length=15)
-    score6 = models.FloatField(max_length=6)
-    subject7 = models.CharField(max_length=15)
-    score7 = models.FloatField(max_length=6)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
 
     date_created = models.DateTimeField(default=timezone.now)
 
+    @property
+    def fields(self):
+        return [f.name for f in self._meta.fields + self._meta.many_to_many]
+
     def __str__(self):
-        return "%s" % (self.subject1)
+        #return '%s %s %s %s %s %s %s %s' % (self.student,self.subject1,self.subject2,self.subject3,self.subject4,self.subject5,self.subject6,self.subject7)
+        return '%s %s' % (self.student,self.subject)
 
     def get_absolute_url(self):
         reverse('subject-scores-detail', kwargs={'pk': self.pk})
 
 class Teacher(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE,primary_key=True)
+    school_id = models.ForeignKey(School, max_length=8, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=30, default='Ramakrishna')
     last_name = models.CharField(max_length=30, default='Vemuri')
-    school = models.ForeignKey(School, max_length=8, on_delete=models.CASCADE)
-    school_name = models.CharField(max_length=40, default='Oakridge International School')
     grade = models.CharField(max_length=2, default='X')
     section = models.CharField(max_length=3,default='A')
     email = models.CharField(max_length=30, default='rkvemuri2000@yahoo.com')
