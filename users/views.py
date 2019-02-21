@@ -1,6 +1,5 @@
 from django.shortcuts import render,redirect, render_to_response
 from django.contrib import messages
-from .tables import Student_GradesTable
 from .forms import UserRegistrationForm,UserUpdateForm,ProfileUpdateForm, SubjectScoresForm,\
     TeacherRegistrationForm, StudentRegistrationForm, Student_GradesForm, GradingForm#, CoursesForm
 from django.contrib.auth.decorators import login_required
@@ -8,6 +7,10 @@ from django.contrib.auth.forms import AdminPasswordChangeForm, PasswordChangeFor
 from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
 from requests import request
+from .filters import Student_GradesListFilter
+from .utils import PagedFilteredTableView
+from .forms import Student_GradesListFormHelper
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect
 from social_django.models import UserSocialAuth
 from django_tables2.views import SingleTableView
@@ -21,6 +24,7 @@ from django.views.generic import (
 from django.contrib.auth.views import LogoutView
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+
 from django.apps import apps
 from django.contrib.auth import login, logout
 from django.shortcuts import render, get_object_or_404
@@ -31,7 +35,7 @@ from datetime import datetime
 from multi_form_view import MultiFormView as MultiFormView
 from django.views.generic.edit import FormView
 from django.urls import reverse_lazy
-from django_tables2 import RequestConfig
+from django_tables2.config import RequestConfig
 from .tables import *
 
 
@@ -289,21 +293,71 @@ class StudentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 class StudentGradesView(TemplateView):
     template_name = 'users/grades.html'
 
-class StudentGradesListView(SingleTableView):
+
+
+@login_required
+def grades(request):
+    if request.user.is_student:
+        try:
+            student = Student.objects.filter(user=request.user).first()
+        except ObjectDoesNotExist:
+            raise TypeError('Student Doesnt exist')
+        try:
+            if Student_Grades.objects.filter(student=student).exists():
+                grades=Student_Grades.objects.filter(student=student)
+                table = StudentGradesTable(grades)
+                RequestConfig(request).configure(table)
+                return render(request, 'users/list_student_grades.html', {'table': table})
+            else:
+                messages.error(request,"No grades listed for the student.")
+                return render(request, 'users/list_student_grades.html')
+        except ObjectDoesNotExist:
+            grades=None
+            messages.error(request, "No grades listed for the student.")
+    elif request.user.is_teacher:
+        if Student_Grades.objects.all().exists():
+            table = StudentGradesTable(Student_Grades.objects.all())
+            RequestConfig(request).configure(table)
+            return render(request, 'users/list_student_grades.html', {'table': table})
+        else:
+            messages.error(request, "No grades listed for the student.")
+            return render(request, 'users/list_student_grades.html')
+    else:
+        messages.error(request, "No grades listed for the student.")
+        return render(request, 'users/list_student_grades.html')
+
+class StudentGradesListView(LoginRequiredMixin, PagedFilteredTableView):
     model = Student_Grades
     template_name = 'users/student_grades_list.html'
     table_class = Student_GradesTable
-    paginate_by = 2
-    #context_object_name = 'student_grades'
+    ordering = ['-id']
+    filter_class = Student_GradesListFilter
+    formhelper_class = Student_GradesListFormHelper
 
-    # def get_context_data(self, **kwargs):
-    #     context = super(StudentGradesListView, self).get_context_data(**kwargs)
-    #     student = Student.objects.filter(user=self.request.user).first()
-    #     table = Student_GradesTable(Student_Grades.objects.filter(student=student))
-    #
-    #     RequestConfig(self.request).configure(table)
-    #     return render(self.request, '/users/student_grades_list.html', {'table': table})
-    #     #return context
+    context_object_name = 'student_grades'
+
+    def get_queryset(self):
+        qs = super(StudentGradesListView, self).get_queryset()
+        return qs
+
+    def post(self, request, *args, **kwargs):
+        return PagedFilteredTableView.as_view()(request)
+
+    def querySet_to_list(qs):
+        """
+        this will return python list<dict>
+        """
+        return [dict(q) for q in qs]
+
+    def get_context_data(self, **kwargs):
+        context = super(StudentGradesListView, self).get_context_data(**kwargs)
+        context['nav_student_grades'] = True
+        search_query = self.get_queryset()
+
+        table = Student_GradesTable(search_query)
+        RequestConfig(self.request, paginate={'per_page': 7}).configure(table)
+        context['table'] = table
+        return context
 
 class StudentGradesDetailView(DetailView):
     model = Student_Grades
@@ -315,8 +369,7 @@ class StudentGradesCreateView(LoginRequiredMixin, CreateView):
     fields = ['student','subject','SA1', 'SA2', 'SA3']
 
     def get_context_data(self, **kwargs):
-        context = super(StudentGradesCreateView, self) \
-            .get_context_data(**kwargs)
+        context = super(StudentGradesCreateView, self).get_context_data(**kwargs)
         context['form'].fields['student'].queryset = Teacher_Students.objects.values_list("student_id", flat=True)
 
         return context
@@ -602,39 +655,6 @@ class UserSubjectListView(ListView):
     def get_queryset(self):
         user = get_object_or_404(User, username=self.kwargs.get('username'))
         return Subject.objects.filter(username=user)
-
-from django.core.exceptions import ObjectDoesNotExist
-import django_tables2 as tables
-@login_required
-def grades(request):
-
-    if request.user.is_student:
-        try:
-            student = Student.objects.filter(user=request.user).first()
-        except ObjectDoesNotExist:
-            raise TypeError('Student Doesnt exist')
-        #queryset=Student_Grades.objects.filter(student=student).first()
-        #print (str(queryset.query))
-        try:
-            if Student_Grades.objects.filter(student=student).exists():
-                grades=Student_Grades.objects.filter(student=student)
-                table = Student_GradesTable(grades)
-                RequestConfig(request).configure(table)
-                return render(request, 'users/list_student_grades.html', {'table': table})
-            else:
-                return render(request, 'users/list_student_grades.html', {'table': dict()})
-        except ObjectDoesNotExist:
-            grades=None
-            raise TypeError('Grades Doesnt exist for student')
-    elif request.user.is_teacher:
-        if Student_Grades.objects.all().exists():
-            table = Student_GradesTable(Student_Grades.objects.all())
-            RequestConfig(request).configure(table)
-            return render(request, 'users/list_student_grades.html', {'table': table})
-        else:
-            return render(request, 'users/list_student_grades.html', {'table': dict()})
-    else:
-        return render(request, 'users/list_student_grades.html', {'table': dict()})
 
 # def show_choices(request,pk=None):
 #     if request.method == 'POST' or request.method == 'GET':

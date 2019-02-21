@@ -78,7 +78,7 @@ urlpatterns = [
 
     path('grading/', views.grades_predictor, name='grades-prediction'),
     url(r'^career/', views.MainView.as_view(), name='career-choices'),
-    url(r'^grades/list/', views.grades, name='list-student-grades'),
+    path('grades/list/', views.grades, name='list-student-grades'),
 
 
 

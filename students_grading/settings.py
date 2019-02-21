@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'reset_migrations',
     'django_tables2',
+    'bootstrap4',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',

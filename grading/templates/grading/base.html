@@ -80,12 +80,12 @@
 			{% endif %}
 			{% block content %}{% endblock %}
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
           <div class="content-section">
             <h3>User Features</h3>
 
               <ul class="list-group">
-                  <a class="nav-item nav-link" href="{% url 'list-student-grades' %}"><li class="list-group-item ">Student Grades</li></a>
+                  <a class="nav-item nav-link" href="{% url 'teacher-student-grades-list' %}"><li class="list-group-item ">Student Grades</li></a>
                 <a class="nav-item nav-link" href="{% url 'grades-prediction' %}"><li class="list-group-item ">Grade Predictions</li></a>
                 <a class="nav-item nav-link" href="#"><li class="list-group-item ">Recommended Courses</li></a>
                 <a class="nav-item nav-link" href="http://www.indiaeducation.net/" target="_blank"><li class="list-group-item ">Career Options</li></a>

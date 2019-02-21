@@ -41,6 +41,7 @@ def home(request):
                 student=Student.objects.filter(user=user).first()
                 args['student'] = student
                 args['subjectscores'] = SubjectScores.objects.filter(student_id=student)
+                args['student_grades']= Student_Grades.objects.filter(student_id=student)
             else:
                 pass
 

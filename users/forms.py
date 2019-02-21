@@ -219,6 +219,32 @@ class TeacherUpdateForm(forms.ModelForm):
         model = User
         fields = ['username', 'email','first_name', 'last_name', 'grade','school']
 
+class Student_GradesListFormHelper(FormHelper):
+    form_id = 'student-grades-search-form'
+    form_class = 'form-inline'
+    field_template = 'bootstrap4/layout/inline_field.html'
+    field_class = 'col-xs-3'
+    label_class = 'col-xs-3'
+    form_show_errors = True
+    help_text_inline = False
+    html5_required = True
+    layout = Layout(
+                Fieldset(
+                    '<i class="fa fa-search"></i> Search Student Grades Records',
+                    InlineField('student'),
+                    InlineField('subject'),
+                    InlineField('SA1'),
+                    InlineField('SA2'),
+                    InlineField('SA3'),
+                ),
+                FormActions(
+                    StrictButton(
+                        '<i class="fa fa-search"></i> Search',
+                        type='submit',
+                        css_class='btn-primary',
+                        style='margin-top:10px;')
+                )
+    )
 class Student_GradesForm(forms.ModelForm):
     student = forms.ModelChoiceField(queryset=Teacher_Students.objects.all(),to_field_name='student_id')
     subject = forms.ModelChoiceField(queryset=Subject.objects.all())
