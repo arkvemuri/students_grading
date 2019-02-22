@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 from users.models import User, Student, Teacher, Student_Grades, Teacher_Students, Subject,SubjectScores
 from django.template import RequestContext
 import datetime
-
+from django.core.paginator import Paginator
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 def grading(request):
@@ -25,13 +25,35 @@ def grading(request):
         return render(request, "grading/grading_results.html", context)
     return render(request, 'grading/grading.html')
 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 @login_required
 def home(request):
     args = {}
-    args['students'] = Student.objects.all()
-    args['teachers'] = Teacher.objects.all()
-    args['subjects'] = Subject.objects.all()
+    students_list=Student.objects.all()
+    teachers_list=Teacher.objects.all()
+    subjects_list=Subject.objects.all()
 
+    page = request.GET.get('page', 1)
+
+    paginator1 = Paginator(subjects_list, 4)
+    paginator2 = Paginator(students_list, 4)
+    paginator3 = Paginator(teachers_list, 4)
+    try:
+        subjects = paginator1.page(page)
+        students = paginator2.page(page)
+        teachers = paginator3.page(page)
+    except PageNotAnInteger:
+        subjects = paginator1.page(1)
+        students=paginator2.page(1)
+        teachers=paginator3.page(1)
+    except EmptyPage:
+        subjects = paginator1.page(paginator1.num_pages)
+        students=paginator2.page(paginator2.num_pages)
+        teachers=paginator3.page(paginator3.num_pages)
+
+    args['subjects'] = subjects
+    args['students'] = students
+    args['teachers'] = teachers
     try:
         if User.objects.filter(username=request.user.username).exists():
             user = User.objects.filter(username=request.user.username).first()
@@ -48,11 +70,14 @@ def home(request):
             if Teacher.objects.filter(user=user).exists():
                 teacher = Teacher.objects.filter(user=user).first()
                 args['teacher'] = teacher
+                args['subject'] = Subject.objects.filter(pk=teacher.subject_id.id).first()
                 if Teacher_Students.objects.filter(teacher_id=teacher).exists():
-                    teacher_student = Teacher_Students.objects.filter(teacher_id=teacher)
-                    args['teacher_students'] = teacher_student
+                    teacher_students = Teacher_Students.objects.filter(teacher_id=teacher)
+                    args['teacher_students'] = teacher_students
             else:
-                pass
+                if Teacher_Students.objects.all().exists():
+                    teacher_students = Teacher_Students.objects.all()
+                    args['teacher_students'] = teacher_students
         else:
             pass
     except Student.DoesNotExist:

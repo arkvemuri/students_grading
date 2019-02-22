@@ -1,7 +1,12 @@
 # filters.py
 import django_filters
-from .models import Student_Grades
+from .models import Student_Grades, Teacher_Students
 
+class Teacher_StudentsListFilter(django_filters.FilterSet):
+    class Meta:
+        model = Teacher_Students
+        fields = ["id","date_created","school_id","student_id","teacher_id"]
+        order_by = ['pk']
 
 class Student_GradesListFilter(django_filters.FilterSet):
     class Meta:

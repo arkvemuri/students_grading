@@ -1,8 +1,7 @@
 {% extends "grading/base.html" %}
-
+{% load render_table from django_tables2 %}
 {% block content %}
-    <p>Students Currently Listed under the teacher {{ teacher_students.teacher.first_name }}</p>
-    {% for student in teacher_students %}
-        <a href="{% url 'teacher-student-detail' student.pk %}"> Student ID :{{ student.student_id }}</a> <br>
-    {% endfor %}
+{% if  table %}
+    {% render_table table %}
+{% endif %}
 {% endblock %}

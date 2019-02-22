@@ -31,12 +31,12 @@ from .views import(
     SubjectScoresDetailView,
     SubjectScoresCreateView,
     UserSubjectListView,
-    TeacherStudentListView,
     TeacherStudentDetailView,
     StudentGradesListView,
     StudentGradesDetailView,
     StudentGradesView,
     TeacherStudentDeleteView,
+    TeacherStudentsListView,
 )
 
 urlpatterns = [
@@ -52,7 +52,9 @@ urlpatterns = [
     url(r'^student/(?P<pk>[\w-]+)/$', StudentDetailView.as_view() , name='student-detail'),
 
     path('teacher_student/new/', TeacherStudentCreateView.as_view(), name='teacher_student_link'),
-    path('teacher_student/', TeacherStudentListView.as_view(), name='teacher-student-list'),
+    #path('teacher_student/', TeacherStudentListView.as_view(), name='teacher-student-list'),
+    #path('teacher_student/list/', views.teacher_students_list, name='list-teacher-students'),
+    path('teacher/student/list/', TeacherStudentsListView.as_view(), name='list-teacher-students'),
     path('teacher_student/<int:pk>/', TeacherStudentDetailView.as_view(), name='teacher-student-detail'),
     url(r'^teacher_student/(?P<pk>[\w-]+)/delete/', TeacherStudentDeleteView.as_view(), name='teacher-student-delete'),
 

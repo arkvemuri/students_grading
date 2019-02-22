@@ -7,9 +7,9 @@ from django.contrib.auth.forms import AdminPasswordChangeForm, PasswordChangeFor
 from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
 from requests import request
-from .filters import Student_GradesListFilter
+from .filters import Student_GradesListFilter, Teacher_StudentsListFilter
 from .utils import PagedFilteredTableView
-from .forms import Student_GradesListFormHelper
+from .forms import Student_GradesListFormHelper, Teacher_StudentsListFormHelper
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect
 from social_django.models import UserSocialAuth
@@ -286,14 +286,12 @@ class StudentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def test_func(self):
         student = self.get_object()
-        if self.request.user == student.username:
+        if self.request.user.is_student:
             return True
         return False
 
 class StudentGradesView(TemplateView):
     template_name = 'users/grades.html'
-
-
 
 @login_required
 def grades(request):
@@ -342,12 +340,6 @@ class StudentGradesListView(LoginRequiredMixin, PagedFilteredTableView):
 
     def post(self, request, *args, **kwargs):
         return PagedFilteredTableView.as_view()(request)
-
-    def querySet_to_list(qs):
-        """
-        this will return python list<dict>
-        """
-        return [dict(q) for q in qs]
 
     def get_context_data(self, **kwargs):
         context = super(StudentGradesListView, self).get_context_data(**kwargs)
@@ -421,14 +413,9 @@ class StudentGradesUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateVie
 class TeacherListView(ListView):
     model = Teacher
     template_name = 'teacher/home.html'
-    context_object_name = 'teachers'
+    context_object_name = 'teacher'
     #ordering = ['-date_created']
 
-    # def get_queryset(self):
-    #     teacher = self.request.user.teacher
-    #
-    #     queryset = Teacher.objects.filter(user=self.request.user).first()
-    #     return queryset
 
 class TeacherDetailView(DetailView):
     model = Teacher
@@ -496,11 +483,37 @@ class TeacherStudentCreateView(LoginRequiredMixin, CreateView):
         else:
             return render(self.request,template_name='users/error.html')
 
+def teacher_students_list(request):
+    table = TeacherStudentsTable(Teacher_Students.objects.all())
 
-class TeacherStudentListView(ListView):
+    return render(request, 'users/list_teacher_students.html', {'table': table})
+
+class TeacherStudentsListView(LoginRequiredMixin, PagedFilteredTableView):
     model = Teacher_Students
     template_name = 'users/teacher_students_list.html'
+    table_class = Teacher_StudentsTable
+    ordering = ['-id']
+    filter_class = Teacher_StudentsListFilter
+    formhelper_class =Teacher_StudentsListFormHelper
+
     context_object_name = 'teacher_students'
+
+    def get_queryset(self):
+        qs = super(TeacherStudentsListView, self).get_queryset()
+        return qs
+
+    def post(self, request, *args, **kwargs):
+        return PagedFilteredTableView.as_view()(request)
+
+    def get_context_data(self, **kwargs):
+        context = super(TeacherStudentsListView, self).get_context_data(**kwargs)
+        context['nav_teacher_students'] = True
+        search_query = self.get_queryset()
+
+        table = Teacher_StudentsTable(search_query)
+        RequestConfig(self.request, paginate={'per_page': 1}).configure(table)
+        context['table'] = table
+        return context
 
 class TeacherStudentDetailView(DetailView):
     model = Teacher_Students
@@ -576,11 +589,7 @@ class SubjectListView(ListView):
 class SubjectDetailView(DetailView):
      model = Subject
      #template_name = 'users/subject_detail.html'
-# class SubjectDetailView(SingleTableView):
-#     model = Subject
-#     template_name = 'users/subject_detail.html'
-#     table_class = SubjectTable
-#     paginate_by = 2
+
 
 class SubjectCreateView(LoginRequiredMixin, CreateView):
     model = Subject
@@ -710,28 +719,7 @@ class MainView(TemplateView):
             #return reverse('career-select', args)
         return self.render_to_response(context)
 
-# class Courses_FormView(FormView):
-#     form_class = CoursesForm
-#     template_name = 'users/courses_list.html'
-#     success_url = '/'
-#
-#     def post(self, request, *args, **kwargs):
-#         courses_form = self.form_class(request.POST)
-#
-#         if courses_form.is_valid():
-#             course_name = self.courses_form.cleaned_data.get('course_name')
-#             messages.success(request, f'You have selected Option {course_name}! ')
-#             return self.render_to_response(
-#                 self.get_context_data(
-#                     success=True
-#                 )
-#             )
-#         else:
-#             return self.render_to_response(
-#                 self.get_context_data(
-#                     courses_form=courses_form,
-#                 )
-#             )
+
 class SubjectScores_FormView(FormView):
     form_class = SubjectScoresForm
     template_name = 'users/courses_list.html'
@@ -753,19 +741,3 @@ class SubjectScores_FormView(FormView):
                     subjectscores_form=subjectscores_form
                 )
             )
-# class MultipleFormsView(MultiFormView):
-#     template_name = "users/courses_list.html"
-#     form_classes = {'courses_form': CoursesForm,
-#                     'subjectscores_form': SubjectScoresForm,
-#                     }
-#
-#     success_urls = {
-#         'courses': reverse_lazy('career-choices'),
-#         'subjectscores': reverse_lazy('teacher-student-grades-list'),
-#     }
-#
-#     def courses_form_valid(self, form):
-#         'contact form processing goes in here'
-#
-#     def subjectscores_form_valid(self, form):
-#         'subscription form processing goes in here'

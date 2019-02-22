@@ -8,6 +8,7 @@ from django.urls import reverse
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Button, ButtonHolder, Submit
 from crispy_forms.bootstrap import *
+from django.core.exceptions import ValidationError
 
 class UserRegistrationForm(UserCreationForm):
     email = forms.EmailField()
@@ -100,8 +101,6 @@ class StudentRegistrationForm(UserCreationForm):
         model = User
 
     def clean_student_id(self):
-
-        from django.core.exceptions import ValidationError
         student_id = self.cleaned_data.get('student_id')
 
         if Student.objects.filter(student_id=student_id).exists():
@@ -110,18 +109,13 @@ class StudentRegistrationForm(UserCreationForm):
 
     @transaction.atomic
     def save(self):
-        #import pdb
-        #pdb.set_trace()
         user = super().save(commit=False)
         user.is_student = True
         user.email =self.cleaned_data.get('email')
         user.save()
 
         school = self.cleaned_data.get('school_id')
-        #school = School.objects.filter(school_id=school_id).first()
-
         student_id = self.cleaned_data.get('student_id')
-
         first_name = self.cleaned_data.get('first_name')
         last_name = self.cleaned_data.get('last_name')
         email = self.cleaned_data.get('email')
@@ -137,7 +131,6 @@ class StudentRegistrationForm(UserCreationForm):
         city = self.cleaned_data.get('city')
         state = self.cleaned_data.get('state')
         country = self.cleaned_data.get('country')
-
 
         student = Student.objects.create(user_id=user.pk,
                                         student_id=student_id,
@@ -160,8 +153,6 @@ class StudentRegistrationForm(UserCreationForm):
                                         )
 
 
-        #student.save()
-
         return user
 
 class StudentUpdateForm(UserChangeForm):
@@ -177,7 +168,7 @@ class TeacherRegistrationForm(UserCreationForm):
     last_name = forms.CharField(max_length=30, initial='Vemuri')
     grade = forms.CharField(max_length=2, initial='X')
     school = forms.ModelChoiceField(queryset=School.objects.all(), empty_label=None,label='Your School')
-    #school_id = forms.HiddenInput()
+    subject=forms.ModelChoiceField(queryset=Subject.objects.all(),empty_label=None, label='Your Subject')
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
@@ -191,6 +182,7 @@ class TeacherRegistrationForm(UserCreationForm):
         self.fields['last_name'].widget.attrs['style'] = "width:15rem"
         self.fields['email'].widget.attrs['style'] = "width:15rem"
         self.fields['grade'].widget.attrs['style'] = "width:10rem"
+        self.fields['subject'].widget.attrs['style'] = "width:10rem"
 
     class Meta(UserCreationForm.Meta):
         model = User
@@ -200,12 +192,20 @@ class TeacherRegistrationForm(UserCreationForm):
         user.is_teacher = True
         user.email = self.cleaned_data.get('email')
         user.save()
+
+        email = self.cleaned_data.get('email')
+        first_name = self.cleaned_data.get('first_name')
+        last_name = self.cleaned_data.get('last_name')
+        grade = self.cleaned_data.get('grade')
         school = self.cleaned_data.get('school')
-        #school = School.objects.filter(school_name=school_name).first()
-        teacher = Teacher.objects.create(user=user, school_id=school)
+        subject = self.cleaned_data.get('subject')
+
+        teacher = Teacher.objects.create(user=user, email=email, first_name=first_name,
+                                         last_name=last_name, grade=grade,school_id=school, subject_id=subject)
 
         if commit:
             user.save()
+            teacher.save()
         return user
 
 class TeacherUpdateForm(forms.ModelForm):
@@ -216,8 +216,35 @@ class TeacherUpdateForm(forms.ModelForm):
     grade = forms.CharField(max_length=2)
 
     class Meta:
-        model = User
-        fields = ['username', 'email','first_name', 'last_name', 'grade','school']
+        model = Teacher
+        fields = ['email','first_name', 'last_name', 'grade','school','subject_id']
+
+class Teacher_StudentsListFormHelper(FormHelper):
+    form_id = 'teacher-students-search-form'
+    form_class = 'form-inline'
+    field_template = 'bootstrap4/layout/inline_field.html'
+    field_class = 'col-xs-3'
+    label_class = 'col-xs-3'
+    form_show_errors = True
+    help_text_inline = False
+    html5_required = True
+    layout = Layout(
+                Fieldset(
+                    '<i class="fa fa-search"></i> Search Records',
+                    InlineField('id'),
+                    InlineField('date_created'),
+                    InlineField('school'),
+                    InlineField('student'),
+                    InlineField('teacher'),
+                ),
+                FormActions(
+                    StrictButton(
+                        '<i class="fa fa-search"></i> Search',
+                        type='submit',
+                        css_class='btn-primary',
+                        style='margin-top:10px;')
+                )
+    )
 
 class Student_GradesListFormHelper(FormHelper):
     form_id = 'student-grades-search-form'

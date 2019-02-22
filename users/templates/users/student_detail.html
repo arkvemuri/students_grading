@@ -1,7 +1,7 @@
 {% extends "grading/base.html" %}
 
 {% block content %}
-{% if user.is_authenticated and user.is_student or user.is_superuser %}
+{% if user.is_authenticated and user.is_student or user.is_teacher or user.is_superuser %}
     <div class="content-section">
         <h4> Student Details</h4>
         Student First Name: {{ student.first_name }} <br>
@@ -9,7 +9,7 @@
         School  :{{ student.school_id }} <br>
         Grade : {{ student.grade }} <br>
     </div>
-    {% if user.is_authenticated and not user.is_superuser %}
+    {% if user.is_authenticated and not user.is_superuser and not user.is_teacher %}
         <div class="content-section">
             <h3>Edit Information</h3>
             <a class="btn btn-outline-info mb-4" href="{% url 'student-update' student.pk %}">Update {{ student.first_name }} Details</a>

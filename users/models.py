@@ -103,6 +103,7 @@ class SubjectScores(models.Model):
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE,primary_key=True)
     school_id = models.ForeignKey(School, max_length=8, on_delete=models.CASCADE)
+    subject_id = models.ForeignKey(Subject, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=30, default='Ramakrishna')
     last_name = models.CharField(max_length=30, default='Vemuri')
     grade = models.CharField(max_length=2, default='X')
