@@ -62,7 +62,7 @@ def home(request):
             if Student.objects.filter(user=user).exists():
                 student=Student.objects.filter(user=user).first()
                 args['student'] = student
-                args['subjectscores'] = SubjectScores.objects.filter(student_id=student)
+                args['subjectscores'] = SubjectScores.objects.all()
                 args['student_grades']= Student_Grades.objects.filter(student_id=student)
             else:
                 pass

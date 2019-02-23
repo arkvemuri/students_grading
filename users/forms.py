@@ -298,28 +298,12 @@ class SubjectScoresForm(forms.ModelForm):
         model = SubjectScores
         fields = ['student','subject'] #,'subject2','subject3','subject4', 'subject5', 'subject6','subject7']
 
-        # fields = ['student','subject1','score1','subject2','score2',
-        #           'subject3','score3','subject4', 'score4',
-        #           'subject5', 'score5','subject6','score6',
-        #           'subject7', 'score7']
 
     def __init__(self, *args, **kwargs):
         super(SubjectScoresForm, self).__init__(*args, **kwargs)
 
         self.fields['subject'].widget.attrs['style'] = "width:15rem"
-        #self.fields['subject'].required = False
-        # self.fields['subject2'].widget.attrs['style'] = "width:15rem"
-        # self.fields['subject2'].required = False
-        # self.fields['subject3'].widget.attrs['style'] = "width:15rem"
-        # self.fields['subject3'].required = False
-        # self.fields['subject4'].widget.attrs['style'] = "width:15rem"
-        # self.fields['subject4'].required = False
-        # self.fields['subject5'].widget.attrs['style'] = "width:15rem"
-        # self.fields['subject5'].required = False
-        # self.fields['subject6'].widget.attrs['style'] = "width:15rem"
-        # self.fields['subject6'].required = False
-        # self.fields['subject7'].widget.attrs['style'] = "width:15rem"
-        # self.fields['subject7'].required = False
+
 
         self.helper = FormHelper(self)
 

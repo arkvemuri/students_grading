@@ -6,12 +6,12 @@
             {% csrf_token %}
             <fieldset class="form-group">
                 <legend class="border-bottom mb-4">Deleting Student
-                <h2>Are you sure you want to delete the Student "{{ object.first_name }}"</h2>
+                <h2>Are you sure you want to delete the Student "{{ student.first_name }}"</h2>
                 </legend>
             </fieldset>
             <div class="form-group">
                 <button class="btn btn-outline-danger" type="submit">Yes, Delete</button>
-                <a class="btn btn-outline-secondary" href="{% url 'student-detail' object.id %}">Cancel</a>
+                <a class="btn btn-outline-secondary" href="{% url 'student-detail' student.pk %}">Cancel</a>
             </div>
         </form>
     </div>

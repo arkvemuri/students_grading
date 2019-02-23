@@ -48,7 +48,8 @@ urlpatterns = [
     path('student/grades/<int:pk>/delete/', StudentGradesDeleteView.as_view(), name='teacher-student-grades-delete'),
 
     url(r'^student/(?P<pk>[\w-]+)/update/', StudentUpdateView.as_view(), name='student-update'),
-    path('student/', StudentListView.as_view(), name='student-list'),
+    url(r'^student/(?P<pk>[\w-]+)/delete/', StudentDeleteView.as_view(), name='student-delete'),
+    url(r'^student/list/', StudentListView.as_view(), name='student-list'),
     url(r'^student/(?P<pk>[\w-]+)/$', StudentDetailView.as_view() , name='student-detail'),
 
     path('teacher_student/new/', TeacherStudentCreateView.as_view(), name='teacher_student_link'),

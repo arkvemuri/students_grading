@@ -277,16 +277,16 @@ class StudentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def test_func(self):
         #student = self.get_object()
-        if self.request.user.is_student:
+        if self.request.user.is_student or self.request.user.is_superuser:
             return True
         return False
 
 class StudentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Student
-
+   #success_url = '/'
     def test_func(self):
-        student = self.get_object()
-        if self.request.user.is_student:
+        #student = self.get_object()
+        if self.request.user.is_superuser:
             return True
         return False
 
@@ -433,8 +433,8 @@ class TeacherDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Teacher
 
     def test_func(self):
-        student = self.get_object()
-        if self.request.user == student.username:
+        teacher = self.get_object()
+        if self.request.user.is_superuser:
             return True
         return False
 
@@ -605,7 +605,7 @@ class SubjectCreateView(LoginRequiredMixin, CreateView):
 class SubjectUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Subject
     success_url = '/'
-    fields = ['subject_name', 'subject_desc', 'school', 'grade']
+    fields = ['subject_name', 'subject_desc', 'school_id', 'grade']
 
     def form_valid(self, form):
         form.instance.user = self.request.user
@@ -621,8 +621,7 @@ class SubjectDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Subject
     success_url = '/'
     def test_func(self):
-        subject = self.get_object()
-
+        #subject = self.get_object()
         if self.request.user.is_superuser:
             return True
         return False
