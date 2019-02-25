@@ -37,6 +37,11 @@ from .views import(
     StudentGradesView,
     TeacherStudentDeleteView,
     TeacherStudentsListView,
+    CoursesCreateView,
+    CoursesDeleteView,
+    CoursesDetailView,
+    CoursesUpdateView,
+    CoursesListView,
 )
 
 urlpatterns = [
@@ -83,8 +88,10 @@ urlpatterns = [
     url(r'^career/', views.MainView.as_view(), name='career-choices'),
     path('grades/list/', views.grades, name='list-student-grades'),
 
-
-
-    #path('career/select/<int:pk>/', views.show_choices, name="career-select-pk"),
+    path('career/courses/', views.MainView.as_view(), name="recommend-courses"),
+    path('career/courses/list/', CoursesListView.as_view(), name="list-courses"),
+    path('career/courses/add/', CoursesCreateView.as_view(), name="create-courses"),
+    path('career/courses/<int:pk>/update/', CoursesUpdateView.as_view(), name="course-update"),
+    path('career/courses/<int:pk>/delete/', CoursesDeleteView.as_view(), name="course-delete"),
 
 ]

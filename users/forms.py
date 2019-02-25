@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import User, Student, Teacher, UserProfile, School,  Student_Grades, Subject, Teacher_Students, SubjectScores
+from .models import User, Student, Teacher, UserProfile, School,  Student_Grades, Subject, Teacher_Students,Courses, SubjectScores
 from django.db import transaction
 from django.forms import ModelChoiceField
 from django.utils.html import mark_safe
@@ -34,6 +34,7 @@ class GradingForm(forms.Form):
     subject_name = forms.CharField(max_length=15)
     failures=forms.IntegerField()
     mother_edu=forms.IntegerField()
+    fjob_teacher=forms.IntegerField()
     father_edu=forms.IntegerField()
     age=forms.IntegerField()
     schoolsup_yes=forms.IntegerField()
@@ -45,6 +46,7 @@ class GradingForm(forms.Form):
         self.fields['subject_name'].widget.attrs['style'] = "width:10rem"
         self.fields['failures'].widget.attrs['style'] = "width:10rem"
         self.fields['mother_edu'].widget.attrs['style'] = "width:10rem"
+        self.fields['fjob_teacher'].widget.attrs['style'] = "width:10rem"
         self.fields['father_edu'].widget.attrs['style'] = "width:10rem"
         self.fields['age'].widget.attrs['style'] = "width:10rem"
         self.fields['schoolsup_yes'].widget.attrs['style'] = "width:10rem"
@@ -294,41 +296,48 @@ class Student_GradesForm(forms.ModelForm):
         fields = '__all__'
 
 class SubjectScoresForm(forms.ModelForm):
-    class Meta:
-        model = SubjectScores
-        fields = ['student','subject'] #,'subject2','subject3','subject4', 'subject5', 'subject6','subject7']
-
+    student = forms.ModelChoiceField(queryset=Student.objects.all(), to_field_name='student_id')
+    subject = forms.ModelChoiceField(queryset=Subject.objects.all())
+    subject_score=forms.FloatField()
 
     def __init__(self, *args, **kwargs):
         super(SubjectScoresForm, self).__init__(*args, **kwargs)
 
+        self.fields['student'].widget.attrs['style'] = "width:15rem"
         self.fields['subject'].widget.attrs['style'] = "width:15rem"
-
+        self.fields['subject_score'].widget.attrs['style'] = "width:15rem"
 
         self.helper = FormHelper(self)
 
-        #self.helper.add_input(Submit('submit', 'Recommend'))
+        self.helper.add_input(Submit('submit', 'Recommend'))
 
-# class CoursesForm(forms.ModelForm):
-#     courses = Courses.objects.all()
-#     choices = [(obj.pk, obj.course_name) for obj in courses]
-#     #choices={"course_name","Mathematics"}
-#     course_name = forms.TypedChoiceField(
-#         label="Select your Course",
-#         choices=choices,
-#         coerce=lambda x: int(x),
-#         widget=forms.RadioSelect,
-#         required=True,
-#     )
-#
-#     class Meta:
-#         model = Courses
-#         fields = ['course_name']
-#
-#     def __init__(self, *args, **kwargs):
-#         super(CoursesForm, self).__init__(*args, **kwargs)
-#         self.helper = FormHelper(self)
-#         #self.helper.add_input(Submit('submit', 'Select'))
-#         self.helper.layout = Layout(
-#             Div(InlineRadios('course_name')),
-#         )
+    class Meta:
+        model = SubjectScores
+        fields = ['student','subject','subject_score'] #,'subject2','subject3','subject4', 'subject5', 'subject6','subject7']
+
+class CoursesForm(forms.ModelForm):
+    courses = Courses.objects.all()
+    choices = [(obj.pk, obj.course_name) for obj in courses]
+    subject=forms.ModelChoiceField(queryset=Subject.objects.all())
+    course_name = forms.TypedChoiceField(
+        label="Course List",
+        choices=choices,
+        coerce=lambda x: int(x),
+        widget=forms.RadioSelect,
+        required=True,
+    )
+    course_link=forms.CharField(label='Link to Course')
+
+    class Meta:
+        model = Courses
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super(CoursesForm, self).__init__(*args, **kwargs)
+        self.fields['subject'].widget.attrs['style'] = "width:15rem"
+
+        #self.helper = FormHelper(self)
+        #self.helper.add_input(Submit('submit', 'Select'))
+        #self.helper.layout = Layout(
+        #    Div(InlineRadios('course_name')),
+        #)

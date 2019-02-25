@@ -3,18 +3,7 @@
 <p><a class="nav-item nav-link" href="{% url 'teacher-detail' teacher.pk %}">Welcome ! {{ teacher.first_name }}  {{ teacher.last_name }}</a></p>
 <main role="main" class="container">
     <div class="row">
-        <div class="col-md-5">
-          <div class="content-section">
-            <h3>Subject List</h3>
-
-              <ul class="list-group">
-                <a class="nav-item nav-link" href="{% url 'subject-detail' teacher.subject_id.id %}"><li class="list-group-item list-group-item-light">{{ subject.subject_name }}</li></a>
-              </ul>
-
-          </div>
-        </div>
-
-        <div class="col-md-5">
+        <div class="col">
           <div class="content-section">
             <h3>Student List</h3>
               {% for teacher in teacher_students %}
@@ -23,7 +12,7 @@
               </ul>
               {% endfor %}
           </div>
-        </div>
+            
 
         </div>
     </main>

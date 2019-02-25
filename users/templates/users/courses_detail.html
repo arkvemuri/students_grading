@@ -1,0 +1,23 @@
+{% extends "grading/base.html" %}
+
+{% block content %}
+{% if user.is_authenticated  %}
+    <div class="content-section">
+        <h4> Course Details</h4>
+        Course Name: {{ course.course_name }} <br>
+        Course Link: {{ course.course_link }} <br>
+        Subject  :{{ course.subject_id }} <br>
+    </div>
+    {% if user.is_authenticated and user.is_teacher %}
+        <div class="content-section">
+            <h3>Edit Information</h3>
+            <a class="btn btn-outline-info mb-4" href="{% url 'course-update' courses.pk %}">Update {{ course.course_name }} Details</a>
+            {% if user.is_superuser %}
+                <a class="btn btn-outline-info mb-4" href="{% url 'course-delete' courses.pk %}">Delete {{ course.course_name }} </a>
+            {% endif %}
+        </div>
+    {% endif %}
+
+{% endif %}
+
+{% endblock %}

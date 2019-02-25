@@ -1,7 +1,7 @@
 from django.shortcuts import render,redirect, render_to_response
 from django.contrib import messages
 from .forms import UserRegistrationForm,UserUpdateForm,ProfileUpdateForm, SubjectScoresForm,\
-    TeacherRegistrationForm, StudentRegistrationForm, Student_GradesForm, GradingForm#, CoursesForm
+    TeacherRegistrationForm, StudentRegistrationForm, Student_GradesForm, GradingForm, CoursesForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AdminPasswordChangeForm, PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
@@ -547,7 +547,56 @@ class UserStudentListView(DetailView):
         #print (student)
         return student
 
+class CoursesListView(ListView):
+    model = Courses
 
+    context_object_name = 'courses'
+    paginate_by = 4
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['courses'] = [(field.name, field.value_to_string(self)) for field in Courses._meta.fields]
+        return context
+
+class CoursesDetailView(DetailView):
+    model = Courses
+
+class CoursesCreateView(LoginRequiredMixin, CreateView):
+    model = Courses
+
+    fields = ['subject', 'course_name','course_link']
+
+    def form_valid(self, form):
+        subject = form.cleaned_data.get('subject')
+        course_name=form.cleaned_data.get('course_name')
+        course_link = form.cleaned_data.get('course_link')
+
+        messages.success(self.request, '{subject} Course is successfully created.')
+        return super().form_valid(form)
+
+    success_url = '/'
+
+class CoursesUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Courses
+    success_url = '/'
+    fields = ['subject', 'course_name', 'course_link']
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+    def test_func(self):
+        if self.request.user.is_superuser:
+            return True
+        return False
+
+class CoursesDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Courses
+    success_url = '/'
+    def test_func(self):
+        if self.request.user.is_superuser:
+            return True
+        return False
 class SubjectScoresListView(ListView):
     model = SubjectScores
 
@@ -637,12 +686,13 @@ def grades_predictor(request):
             failures        = float(f['failures'].value())
             mother_edu      = float(f['mother_edu'].value())
             father_edu      = float(f['father_edu'].value())
+            Fjob_teacher    = float(f['fjob_teacher'].value())
             age             = float(f['age'].value())
             schoolsup_yes   = float(f['schoolsup_yes'].value())
             higher_yes      = float(f['higher_yes'].value())
 
-            FinalGrade = 4.27 + -0.38 * failures + 0.08 * mother_edu + 0.08 * father_edu + -0.13 * age + 0.67 * schoolsup_yes + 0.27 * higher_yes
-
+            #FinalGrade = 4.27 + -0.38 * failures + 0.08 * mother_edu + 0.08 * father_edu + -0.13 * age + 0.67 * schoolsup_yes + 0.27 * higher_yes
+            FinalGrade = 4.27 - 0.38 * failures + 0.14 * mother_edu + 0.33 * Fjob_teacher + 0.14 * father_edu - 0.13 * age + 0.67 * schoolsup_yes + 0.27 * higher_yes
             print(f'{FinalGrade:9.4f}')
 
             messages.success(request, f'{student_id}\'s  predicted grade in {subject_name} is {FinalGrade:9.4f}! ')
@@ -650,7 +700,6 @@ def grades_predictor(request):
     else:
         f=GradingForm()
     return render(request, 'users/grading.html', {'form': f})
-
 
 class UserSubjectListView(ListView):
     model = Subject
@@ -664,60 +713,29 @@ class UserSubjectListView(ListView):
         user = get_object_or_404(User, username=self.kwargs.get('username'))
         return Subject.objects.filter(username=user)
 
-# def show_choices(request,pk=None):
-#     if request.method == 'POST' or request.method == 'GET':
-#         courses_form = CoursesForm(request.POST)
-#         subjectscores_form = SubjectScoresForm(request.POST)
-#         if courses_form.is_valid():
-#             course_name = courses_form.cleaned_data.get('course_name')
-#             messages.success(request, f'You have selected Option { course_name }! ')
-#             args = {'course_name': course_name}
-#             return reverse('career-select',pk=args)
-#     return render(request, 'users/career_options.html',{'courses_form': courses_form,'subjectscores_form':subjectscores_form},pk=pk)
-
-
-# def save_scores(request):
-#     if request.method == 'POST':
-#         subjectscores_form = SubjectScoresForm(request.POST)
-#         #courses_form = CoursesForm(request.POST)
-#         if subjectscores_form.is_valid():
-#             #student_id = subjectscores_form.cleaned_data.get('student_id')
-#             #gpa = subjectscores_form['GPA'].value()
-#             #subject = subjectscores_form.cleaned_data.get('subject')
-#             #score = subjectscores_form.cleaned_data.get('score')
-#             subjectscores_form.save()
-#             messages.success(request, f'Scores successfully saved! ')
-#             return redirect('career-scores-save')
-#     else:
-#         subjectscores_form=SubjectScoresForm(request.GET)
-#         #courses_form = CoursesForm(request.GET)
-#     return render(request, 'users/courses_list.html',{'subjectscores_form': subjectscores_form})
-
 
 class MainView(TemplateView):
     template_name = 'users/career_options.html'
 
     def get(self, request, *args, **kwargs):
-        courses_form = CoursesForm(self.request.GET or None)
         subjectscores_form = SubjectScoresForm(self.request.GET or None)
         context = self.get_context_data(**kwargs)
         context['subjectscores_form'] = subjectscores_form
-        context['courses_form'] = courses_form
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
-        courses_form = CoursesForm(self.request.POST)
         subjectscores_form = SubjectScoresForm(self.request.POST)
         context = self.get_context_data(**kwargs)
         context['subjectscores_form'] = subjectscores_form
-        context['courses_form'] = courses_form
-        if courses_form.is_valid() and subjectscores_form.is_valid():
-            course_name = courses_form.cleaned_data.get('course_name')
-            messages.success(request, f'You have selected Option {course_name}! ')
-            context['course_name']= course_name
-            #return reverse('career-select', args)
+        if subjectscores_form.is_valid():
+            student = subjectscores_form.cleaned_data.get('student')
+            subject = subjectscores_form.cleaned_data.get('subject')
+            subject_score = subjectscores_form.cleaned_data.get('subject_score')
+            if (int(subject_score) < 50):
+                courses = Courses.objects.filter(subject=subject)
+                context['courses'] = courses
+                messages.success(request, f'{student}\'s  recommended courses in {subject} are  ')
         return self.render_to_response(context)
-
 
 class SubjectScores_FormView(FormView):
     form_class = SubjectScoresForm
@@ -726,7 +744,6 @@ class SubjectScores_FormView(FormView):
 
     def post(self, request, *args, **kwargs):
         subjectscores_form = self.form_class(request.POST)
-        #courses_form = CoursesForm()
         if subjectscores_form.is_valid():
             subjectscores_form.save()
             return self.render_to_response(

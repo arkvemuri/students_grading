@@ -11,13 +11,12 @@ isodate==0.6.0
 joblib==0.12.5
 kiwisolver==1.0.1
 msrest==0.6.3
-mysqlclient
 oauthlib==3.0.0
 django-crispy-forms==1.7.2
 django-multi-form-view==2.0.0
 django-tables2==2.0.4
-django-tables2-bootstrap4==2.0.0b5
 django-tables2-wsgi-fix==0.16.0.dev0
+django-tables2-bootstrap4==2.0.0b5
 json2html==1.2.1
 Pillow==5.4.1
 json2html==1.2.1
@@ -37,3 +36,7 @@ social-auth-core==2.0.0
 tqdm==4.29.0
 urllib3==1.24.1
 virtualenv==16.2.0
+django-reset-migrations==0.3.1
+django-bootstrap4==0.0.7
+django-filters==0.2.1
+django-filter

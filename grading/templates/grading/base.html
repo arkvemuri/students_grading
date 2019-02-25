@@ -50,6 +50,7 @@
                         {% if user.is_superuser  %}
                             <a class="nav-item nav-link" href="{% url 'subject-create' %}">Add Subject</a>
                             <a class="nav-item nav-link" href="{% url 'teacher_signup' %}">Add Teacher</a>
+                            <a class="nav-item nav-link" href="{% url 'create-courses' %}">Add Courses</a>
                             <a class="nav-item nav-link" href="{% url 'subject-scores-new' %}">Student Subjects</a>
                             <a class="nav-item nav-link" href="{% url 'list-teacher-students' %}">Link Students</a>
                         {% endif %}
@@ -88,7 +89,7 @@
               <ul class="list-group">
                   <a class="nav-item nav-link" href="{% url 'teacher-student-grades-list' %}"><li class="list-group-item ">Student Grades</li></a>
                 <a class="nav-item nav-link" href="{% url 'grades-prediction' %}"><li class="list-group-item ">Grade Predictions</li></a>
-                <a class="nav-item nav-link" href="#"><li class="list-group-item ">Recommended Courses</li></a>
+                <a class="nav-item nav-link" href="{% url 'career-choices' %}"><li class="list-group-item ">Recommended Courses</li></a>
                 <a class="nav-item nav-link" href="http://www.indiaeducation.net/" target="_blank"><li class="list-group-item ">Career Options</li></a>
               </ul>
 

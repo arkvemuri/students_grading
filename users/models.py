@@ -14,16 +14,6 @@ class User(AbstractUser):
      def get_absolute_url(self):
         return reverse('user-detail', kwargs={'pk': self.pk})
 
-class Courses(models.Model):
-    course_name=models.CharField(max_length=50)
-    course_link=models.CharField(max_length=100)
-
-    def __str__(self):
-        return (self.course_name,self.course_link)
-
-    def get_absolute_url(self):
-        return reverse('course-detail', kwargs={'pk': self.pk})
-
 class School(models.Model):
     school_name = models.CharField(max_length=60, default='Oakridge International School (Newton Campus)')
     school_id = models.CharField(max_length=8, primary_key=True)
@@ -83,10 +73,21 @@ class Subject(models.Model):
     def get_absolute_url(self):
         reverse('subject-detail', kwargs={'pk': self.pk})
 
+class Courses(models.Model):
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    course_name=models.CharField(max_length=50)
+    course_link=models.CharField(max_length=100)
+
+    def __str__(self):
+        return "%s %s %s" % (self.subject, self.course_name,self.course_link)
+
+    def get_absolute_url(self):
+        return reverse('course-detail', kwargs={'pk': self.pk})
+
 class SubjectScores(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
-
+    subject_score=models.FloatField(max_length=6,default=0.0)
     date_created = models.DateTimeField(default=timezone.now)
 
     @property
