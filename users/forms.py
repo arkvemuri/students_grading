@@ -52,9 +52,6 @@ class GradingForm(forms.Form):
         self.fields['schoolsup_yes'].widget.attrs['style'] = "width:10rem"
         self.fields['higher_yes'].widget.attrs['style'] = "width:10rem"
 
-def get_choices():
-    return [(e.id, e.description) for e in School.objects.all()]
-
 class StudentRegistrationForm(UserCreationForm):
     #username = forms.RegexField(label='Username', max_length=30, regex=r'^[\w-]+$', error_messages='This value must contain only letters, numbers, hyphens and underscores.')
     first_name = forms.CharField(max_length=15, initial='Abhinav')
@@ -274,6 +271,22 @@ class Student_GradesListFormHelper(FormHelper):
                         style='margin-top:10px;')
                 )
     )
+
+class Teacher_StudentsForm(forms.ModelForm):
+    teacher = forms.ModelChoiceField(queryset=Teacher.objects.all(),to_field_name='user_id')
+    student = forms.ModelChoiceField(queryset=Subject.objects.all(),to_field_name='student_id')
+    school = forms.ModelChoiceField(queryset=School.objects.all(),to_field_name='school_id')
+
+    def __init__(self, *args, **kwargs):
+        super(Teacher_StudentsForm, self).__init__(*args, **kwargs)
+        self.fields['teacher'].widget.attrs['style'] = "width:15rem"
+        self.fields['student'].widget.attrs['style'] = "width:15rem"
+        self.fields['school'].widget.attrs['style'] = "width:15rem"
+
+    class Meta:
+        model = Teacher_Students
+        fields = '__all__'
+
 class Student_GradesForm(forms.ModelForm):
     student = forms.ModelChoiceField(queryset=Teacher_Students.objects.all(),to_field_name='student_id')
     subject = forms.ModelChoiceField(queryset=Subject.objects.all())
@@ -319,13 +332,14 @@ class CoursesForm(forms.ModelForm):
     courses = Courses.objects.all()
     choices = [(obj.pk, obj.course_name) for obj in courses]
     subject=forms.ModelChoiceField(queryset=Subject.objects.all())
-    course_name = forms.TypedChoiceField(
-        label="Course List",
-        choices=choices,
-        coerce=lambda x: int(x),
-        widget=forms.RadioSelect,
-        required=True,
-    )
+    # course_name = forms.TypedChoiceField(
+    #     label="Course List",
+    #     choices=choices,
+    #     coerce=lambda x: int(x),
+    #     widget=forms.RadioSelect,
+    #     required=True,
+    # )
+    course_name=forms.CharField()
     course_link=forms.CharField(label='Link to Course')
 
     class Meta:
@@ -334,7 +348,7 @@ class CoursesForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(CoursesForm, self).__init__(*args, **kwargs)
-        self.fields['subject'].widget.attrs['style'] = "width:15rem"
+        #self.fields['subject'].widget.attrs['style'] = "width:15rem"
 
         #self.helper = FormHelper(self)
         #self.helper.add_input(Submit('submit', 'Select'))

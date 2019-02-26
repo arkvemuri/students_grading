@@ -61,8 +61,8 @@ class Student(models.Model):
 
 
 class Subject(models.Model):
-    subject_name = models.CharField(max_length=15)
-    subject_desc = models.CharField(max_length=30)
+    subject_name = models.CharField(max_length=30)
+    subject_desc = models.CharField(max_length=120)
     school_id = models.ForeignKey(School, on_delete=models.CASCADE)
     grade = models.CharField(max_length=2)
     date_created = models.DateTimeField(default=timezone.now)
@@ -113,6 +113,9 @@ class Teacher(models.Model):
     mobile = models.CharField(max_length=14,default='9000600534')
     spoken_lang = models.CharField(max_length=20,default='Telugu,English,Hindi')
     date_created = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return "%s" %  (self.first_name)
 
     def get_absolute_url(self):
         return reverse('teacher-detail', kwargs={'pk': self.pk})

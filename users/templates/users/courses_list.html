@@ -6,7 +6,7 @@
     <div class="content-section">
 
         <h4> Enter Student Details</h4>
-        <form action="{% url 'subject-scores-save' %}" method="POST">
+        <form action="{% url 'create-courses' %}" method="POST">
             {% csrf_token %}
             <fieldset class="form-group">
                 <legend class="border-bottom mb-4">

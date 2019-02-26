@@ -12,6 +12,7 @@
 
     <link rel="stylesheet" type="text/css" href="{% static 'grading/main.css' %}">
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
     {% if title %}
         <title>Django Grading - {{ title }}</title>
@@ -87,7 +88,10 @@
             <h3>User Features</h3>
 
               <ul class="list-group">
-                  <a class="nav-item nav-link" href="{% url 'teacher-student-grades-list' %}"><li class="list-group-item ">Student Grades</li></a>
+                  {% if user.is_superuser %}
+                    <a class="nav-item nav-link" href="{% url 'link-teacher-student' %}"><li class="list-group-item ">Create Student Link</li></a>
+                  {% endif %}
+                <a class="nav-item nav-link" href="{% url 'teacher-student-grades-list' %}"><li class="list-group-item ">Student Grades</li></a>
                 <a class="nav-item nav-link" href="{% url 'grades-prediction' %}"><li class="list-group-item ">Grade Predictions</li></a>
                 <a class="nav-item nav-link" href="{% url 'career-choices' %}"><li class="list-group-item ">Recommended Courses</li></a>
                 <a class="nav-item nav-link" href="http://www.indiaeducation.net/" target="_blank"><li class="list-group-item ">Career Options</li></a>

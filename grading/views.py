@@ -33,27 +33,24 @@ def home(request):
     teachers_list=Teacher.objects.all()
     subjects_list=Subject.objects.all()
 
-    page = request.GET.get('page', 1)
-
-    paginator1 = Paginator(subjects_list, 4)
-    paginator2 = Paginator(students_list, 4)
-    paginator3 = Paginator(teachers_list, 4)
+    paginate_by = 4
+    paginator = Paginator(subjects_list, paginate_by)
+    paginator1=Paginator(students_list, paginate_by)
+    page = request.GET.get('page')
     try:
-        subjects = paginator1.page(page)
-        students = paginator2.page(page)
-        teachers = paginator3.page(page)
+        subjects = paginator.page(page)
+        students = paginator1.page(page)
     except PageNotAnInteger:
-        subjects = paginator1.page(1)
-        students=paginator2.page(1)
-        teachers=paginator3.page(1)
+        subjects = paginator.page(1)
+        students = paginator1.page(1)
     except EmptyPage:
-        subjects = paginator1.page(paginator1.num_pages)
-        students=paginator2.page(paginator2.num_pages)
-        teachers=paginator3.page(paginator3.num_pages)
+        subjects = paginator.page(paginator.num_pages)
+        students = paginator1.page(paginator.num_pages)
 
     args['subjects'] = subjects
     args['students'] = students
-    args['teachers'] = teachers
+
+    args['teachers'] = teachers_list
     try:
         if User.objects.filter(username=request.user.username).exists():
             user = User.objects.filter(username=request.user.username).first()

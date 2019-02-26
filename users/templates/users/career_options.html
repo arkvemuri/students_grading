@@ -20,7 +20,7 @@
             {% if courses %}
                 {% for course in courses %}
                     Course ID: {{ course.id}} <br>
-                    <a  href="{{ course.course_link }}" target="_blank">{{ course.course_name }}</a>
+                    <a  href="{{ course.course_link }}" target="_blank">{{ course.course_name }}</a> <br>
                 {% endfor %}
             {% endif %}
         </div>

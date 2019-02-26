@@ -3,7 +3,7 @@
 <p><a class="nav-item nav-link" href="{% url 'teacher-detail' teacher.pk %}">Welcome ! {{ teacher.first_name }}  {{ teacher.last_name }}</a></p>
 <main role="main" class="container">
     <div class="row">
-        <div class="col">
+        <div class="col-md-5">
           <div class="content-section">
             <h3>Student List</h3>
               {% for teacher in teacher_students %}

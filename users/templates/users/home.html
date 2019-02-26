@@ -13,7 +13,7 @@
                       {% endfor %}
                   {% endif %}
                </div>
-              {% if subjects.has_other_pages %}
+                {% if subjects.has_other_pages %}
                  {% if subjects.has_previous %}
                     <a class="btn btn-primary mb-4" href="?page=1">First</a>
                     <a class="btn btn-primary mb-4" href="?page={{ subjects.previous_page_number}}">Previous</a>

@@ -1,7 +1,7 @@
 from django.shortcuts import render,redirect, render_to_response
 from django.contrib import messages
 from .forms import UserRegistrationForm,UserUpdateForm,ProfileUpdateForm, SubjectScoresForm,\
-    TeacherRegistrationForm, StudentRegistrationForm, Student_GradesForm, GradingForm, CoursesForm
+    TeacherRegistrationForm, StudentRegistrationForm, Teacher_StudentsForm,Student_GradesForm, GradingForm#, CoursesForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AdminPasswordChangeForm, PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
@@ -84,7 +84,7 @@ class TeacherSignUpView(CreateView):
     def form_valid(self, form):
         user = form.save()
         login(self.request, user, 'django.contrib.auth.backends.ModelBackend')
-        messages.success(self.request, f'Your Teacher Account bas been created! You can login with username { user.username }! ')
+        messages.success(self.request, f'Your Teacher Account has been created! You can login with username { user.username }! ')
         return redirect('teacher-list')
     success_url = '/'
 
@@ -400,6 +400,7 @@ class StudentGradesUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateVie
 
     def form_valid(self, form):
         form.instance.teacher_id = self.request.user.teacher
+        messages.success(self.request, 'Student Grades are successfully updated.')
         return super().form_valid(form)
 
     def test_func(self):
@@ -411,10 +412,14 @@ class StudentGradesUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateVie
 
     success_url = '/'
 class TeacherListView(ListView):
-    model = Teacher
     template_name = 'teacher/home.html'
+
     context_object_name = 'teacher'
     #ordering = ['-date_created']
+
+    def get_queryset(self):
+        queryset = Teacher.objects.filter(user=self.request.user).first()
+        return queryset
 
 
 class TeacherDetailView(DetailView):
@@ -426,9 +431,11 @@ class TeacherCreateView(CreateView):
     fields = ['first_name', 'last_name', 'school_id', 'email',  'grade', 'section', 'spoken_lang']
 
     def form_valid(self, form):
-        form.instance.created_by = self.request.user
-        return redirect('user-home')
+        form.instance.teacher = self.request.user
 
+        return super().form_valid(form)
+
+    success_url = '/'
 class TeacherDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Teacher
 
@@ -438,6 +445,7 @@ class TeacherDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
             return True
         return False
 
+    success_url = '/'
 class TeacherUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Teacher
 
@@ -445,6 +453,7 @@ class TeacherUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def form_valid(self, form):
         form.instance.user.teacher = self.request.user.teacher
+        messages.success(self.request, 'Teacher successfully updated.')
         return super().form_valid(form)
 
     def test_func(self):
@@ -453,35 +462,61 @@ class TeacherUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             return True
         return False
 
+    success_url = '/'
 
-class TeacherStudentCreateView(LoginRequiredMixin, CreateView):
+class TeacherStudentsCreateView(LoginRequiredMixin, CreateView):
     model = Teacher_Students
-
-    fields = ['student']
+    form=Teacher_StudentsForm()
+    fields = ['teacher','student','school']
 
     def get_context_data(self, **kwargs):
-        kwargs['user_type'] = 'teacher'
-        return super().get_context_data(**kwargs)
+        context = super(TeacherStudentsCreateView, self).get_context_data(**kwargs)
 
-    def get_initial(self):
-        return {'student_id': Student.objects.all().values_list('student_id', flat=True)}
+        context['form'].fields['student'].queryset = Student.objects.values_list("student_id", flat=True)
+        #context['form'].fields['teacher'].queryset = Teacher.objects.values_list("first_name", flat=True)
+
+        return context
 
     def form_valid(self, form):
-        ls1 = Teacher_Students.objects.all().values_list('student_id', flat=True)
-        ls2 = Student.objects.all().values_list('student_id', flat=True)
+        teacher = form.cleaned_data.get('teacher')
 
-        form.instance.teacher_id = self.request.user.teacher.pk
-        form.instance.school_id=self.request.user.teacher.school_id.pk
-        form.instance.user=self.request.user
+        student = form.cleaned_data.get('student')
+        school = form.cleaned_data.get('school')
 
-        if set(ls1) != set(ls2):
-            teacher_students = form.save()
-            teacher_students.school_id=self.request.user.teacher.school_id
-            teacher_students.save()
-            messages.success(self.request, 'Student is successfully linked to the teacher.')
-            return redirect('teacher-student-list')
-        else:
-            return render(self.request,template_name='users/error.html')
+        teacher_students = form.save(commit=False)
+
+        teacher_students.teacher =teacher
+        teacher_students.student = student
+        teacher_students.school = school
+
+        teacher_students.save()
+        messages.success(self.request, 'Students are successfully linked.')
+        return redirect('list-teacher-students')
+
+    #success_url = '/'
+    # def get_context_data(self, **kwargs):
+    #     kwargs['user_type'] = 'teacher'
+    #     return super().get_context_data(**kwargs)
+    #
+    # def get_initial(self):
+    #     return {'student_id': Student.objects.all().values_list('student_id', flat=True),'teacher_id': Teacher.objects.all().values_list('teacher_id', flat=True)}
+    #
+    # def form_valid(self, form):
+    #     ls1 = Teacher_Students.objects.all().values_list('student_id', flat=True)
+    #     ls2 = Student.objects.all().values_list('student_id', flat=True)
+    #
+    #     form.instance.teacher_id = self.request.user.teacher.pk
+    #     form.instance.school_id=self.request.user.teacher.school_id.pk
+    #     form.instance.user=self.request.user
+    #
+    #     if set(ls1) != set(ls2):
+    #         teacher_students = form.save()
+    #         teacher_students.school_id=self.request.user.teacher.school_id
+    #         teacher_students.save()
+    #         messages.success(self.request, 'Student is successfully linked to the teacher.')
+    #         return redirect('teacher-student-list')
+    #     else:
+    #         return render(self.request,template_name='users/error.html')
 
 def teacher_students_list(request):
     table = TeacherStudentsTable(Teacher_Students.objects.all())
@@ -511,16 +546,16 @@ class TeacherStudentsListView(LoginRequiredMixin, PagedFilteredTableView):
         search_query = self.get_queryset()
 
         table = Teacher_StudentsTable(search_query)
-        RequestConfig(self.request, paginate={'per_page': 1}).configure(table)
+        RequestConfig(self.request, paginate={'per_page': 7}).configure(table)
         context['table'] = table
         return context
 
-class TeacherStudentDetailView(DetailView):
+class TeacherStudentsDetailView(DetailView):
     model = Teacher_Students
     template_name = 'users/teacher_students_detail.html'
     context_object_name = 'teacher_students'
 
-class TeacherStudentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+class TeacherStudentsDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Teacher_Students
 
     def test_func(self):
@@ -549,7 +584,7 @@ class UserStudentListView(DetailView):
 
 class CoursesListView(ListView):
     model = Courses
-
+    template_name="/users/courses_list.html"
     context_object_name = 'courses'
     paginate_by = 4
 
@@ -571,7 +606,7 @@ class CoursesCreateView(LoginRequiredMixin, CreateView):
         course_name=form.cleaned_data.get('course_name')
         course_link = form.cleaned_data.get('course_link')
 
-        messages.success(self.request, '{subject} Course is successfully created.')
+        messages.success(self.request, 'Course is successfully created.')
         return super().form_valid(form)
 
     success_url = '/'
@@ -626,19 +661,39 @@ class SubjectScoresCreateView(LoginRequiredMixin, CreateView):
 
     success_url = '/'
 
+from django.core.paginator import Paginator
+from django.core.paginator import EmptyPage
+from django.core.paginator import PageNotAnInteger
+
 class SubjectListView(ListView):
     model = Subject
 
-    template_name = 'grading/home.html'
+    template_name = 'users/home.html'
     context_object_name = 'subjects'
     paginate_by = 4
 
-    #ordering = ['-date_created']
+    # ordering = ['-date_created']
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        subjects = Subject.objects.all()
+        paginator = Paginator(subjects, self.paginate_by)
+        page = self.request.GET.get('page')
+
+        try:
+            subjects = paginator.page(page)
+        except PageNotAnInteger:
+            subjects = paginator.page(1)
+        except EmptyPage:
+            subjects = paginator.page(paginator.num_pages)
+        context['subjects'] = subjects
+
+        return context
+
+
 
 class SubjectDetailView(DetailView):
      model = Subject
      #template_name = 'users/subject_detail.html'
-
 
 class SubjectCreateView(LoginRequiredMixin, CreateView):
     model = Subject
