@@ -669,11 +669,11 @@ def load_subjects(request):
 class SubjectScoresCreateView(LoginRequiredMixin, CreateView):
     model = SubjectScores
     form_class=SubjectScoresForm
-    #fields = ['student', 'subject']
-
 
     def form_valid(self, form):
         student = form.cleaned_data.get('student')
+        subject = form.cleaned_data.get('subject')
+        subject_score=form.cleaned_data.get('subject_score')
         form.instance.student=Student.objects.filter(student_id=student.pk).first()
         messages.success(self.request, 'Subject is successfully added to the Student.')
         return super().form_valid(form)
