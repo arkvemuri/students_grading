@@ -31,10 +31,11 @@ def home(request):
     args = {}
     students_list=Student.objects.all()
     teachers_list=Teacher.objects.all()
-    subjects_list=Subject.objects.all()
-
+    subjects_list=Subject.objects.all().order_by('id')
+    #ordering = ['-id']
     paginate_by = 4
     paginator = Paginator(subjects_list, paginate_by)
+
     #paginator1=Paginator(students_list, paginate_by)
     page = request.GET.get('page')
     try:

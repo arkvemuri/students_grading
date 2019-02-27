@@ -67,6 +67,7 @@ urlpatterns = [
     path('signup/', SignUpView.as_view(), name='signup'),
     path('signup/student/new/', StudentSignUpView.as_view(), name='student_signup'),
     path('signup/teacher/new/', TeacherSignUpView.as_view(), name='teacher_signup'),
+    url(r'^ajax/validate_username/$', views.validate_username, name='validate_username'),
 
     url(r'^teacher/list/', TeacherListView.as_view(), name='teacher-list'),
     url(r'^teacher/(?P<pk>[\w-]+)/update/', TeacherUpdateView.as_view(), name='teacher-update'),
