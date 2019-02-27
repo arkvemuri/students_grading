@@ -37,11 +37,20 @@ from django.views.generic.edit import FormView
 from django.urls import reverse_lazy
 from django_tables2.config import RequestConfig
 from .tables import *
-
+from django.http import JsonResponse
 
 @login_required
 def home(request):
     return render(request, 'users/home.html')
+
+def validate_username(request):
+    username = request.GET.get('username', None)
+    data = {
+        'is_taken': User.objects.filter(username__iexact=username).exists()
+    }
+    if data['is_taken']:
+        data['error_message'] = 'A user with this username already exists.'
+    return JsonResponse(data)
 
 class SignUpView(TemplateView):
     template_name = 'users/signup.html'
@@ -648,10 +657,20 @@ class SubjectScoresListView(ListView):
 class SubjectScoresDetailView(DetailView):
     model = SubjectScores
 
+
+def load_subjects(request):
+    student_id = request.GET.get('student')
+
+    student = Student.objects.filter(student_id=student_id).first()
+
+    subjects = Subject.objects.filter(grade=student.grade).order_by('subject_name')
+    return render(request, 'users/subject_dropdown_list_options.html', {'subjects': subjects})
+
 class SubjectScoresCreateView(LoginRequiredMixin, CreateView):
     model = SubjectScores
+    form_class=SubjectScoresForm
+    #fields = ['student', 'subject']
 
-    fields = ['student', 'subject']
 
     def form_valid(self, form):
         student = form.cleaned_data.get('student')
@@ -672,7 +691,7 @@ class SubjectListView(ListView):
     context_object_name = 'subjects'
     paginate_by = 4
 
-    # ordering = ['-date_created']
+    ordering = ['-date_created']
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         subjects = Subject.objects.all()
@@ -688,8 +707,6 @@ class SubjectListView(ListView):
         context['subjects'] = subjects
 
         return context
-
-
 
 class SubjectDetailView(DetailView):
      model = Subject
@@ -781,34 +798,48 @@ class MainView(TemplateView):
     def post(self, request, *args, **kwargs):
         subjectscores_form = SubjectScoresForm(self.request.POST)
         context = self.get_context_data(**kwargs)
+
         context['subjectscores_form'] = subjectscores_form
+        if 'student' in subjectscores_form.data:
+            try:
+                student_id = subjectscores_form.data.get('student')
+                student = Student.objects.filter(student_id=student_id).first()
+                subjectscores_form.fields['subject'].queryset = Subject.objects.filter(grade=student.grade).order_by('subject_name')
+            except (ValueError, TypeError):
+                pass  # invalid input from the client; ignore and fallback to empty City queryset
+        else:
+            subjectscores_form.fields['subject'].queryset = Subject.objects.all()
         if subjectscores_form.is_valid():
-            student = subjectscores_form.cleaned_data.get('student')
-            subject = subjectscores_form.cleaned_data.get('subject')
-            subject_score = subjectscores_form.cleaned_data.get('subject_score')
+            student = request.POST.get('student')
+            subject_id = request.POST.get('subject')
+            subject_score = request.POST.get('subject_score')
             if (int(subject_score) < 50):
-                courses = Courses.objects.filter(subject=subject)
+                courses = Courses.objects.filter(subject=subject_id)
                 context['courses'] = courses
-                messages.success(request, f'{student}\'s  recommended courses in {subject} are  ')
+                subject= Subject.objects.filter(pk=subject_id).first()
+                if (courses.exists()):
+                    messages.success(request, f'{student}\'s  recommended courses in {subject.subject_name} are  ')
+                else:
+                    messages.error(request, f'No Courses exist')
         return self.render_to_response(context)
 
-class SubjectScores_FormView(FormView):
-    form_class = SubjectScoresForm
-    template_name = 'users/courses_list.html'
-    success_url = '/'
-
-    def post(self, request, *args, **kwargs):
-        subjectscores_form = self.form_class(request.POST)
-        if subjectscores_form.is_valid():
-            subjectscores_form.save()
-            return self.render_to_response(
-                self.get_context_data(
-                    success=True
-                )
-            )
-        else:
-            return self.render_to_response(
-                self.get_context_data(
-                    subjectscores_form=subjectscores_form
-                )
-            )
+# class SubjectScores_FormView(FormView):
+#     form_class = SubjectScoresForm
+#     template_name = 'users/courses_list.html'
+#     success_url = '/'
+#
+#     def post(self, request, *args, **kwargs):
+#         subjectscores_form = self.form_class(request.POST)
+#         if subjectscores_form.is_valid():
+#             subjectscores_form.save()
+#             return self.render_to_response(
+#                 self.get_context_data(
+#                     success=True
+#                 )
+#             )
+#         else:
+#             return self.render_to_response(
+#                 self.get_context_data(
+#                     subjectscores_form=subjectscores_form
+#                 )
+#             )

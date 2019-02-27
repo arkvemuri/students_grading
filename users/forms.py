@@ -309,9 +309,9 @@ class Student_GradesForm(forms.ModelForm):
         fields = '__all__'
 
 class SubjectScoresForm(forms.ModelForm):
-    student = forms.ModelChoiceField(queryset=Student.objects.all(), to_field_name='student_id')
-    subject = forms.ModelChoiceField(queryset=Subject.objects.all())
-    subject_score=forms.FloatField()
+    #student = forms.ModelChoiceField(queryset=Student.objects.all(), to_field_name='student_id')
+    #subject = forms.ModelChoiceField(queryset=Subject.objects.all())
+    #subject_score=forms.FloatField()
 
     def __init__(self, *args, **kwargs):
         super(SubjectScoresForm, self).__init__(*args, **kwargs)
@@ -323,6 +323,16 @@ class SubjectScoresForm(forms.ModelForm):
         self.helper = FormHelper(self)
 
         self.helper.add_input(Submit('submit', 'Recommend'))
+        self.fields['subject'].queryset = Subject.objects.none()
+        if 'student' in self.data:
+            try:
+                student_id = int(self.data.get('student'))
+                student = Student.objects.filter(student_id=student_id)
+                self.fields['subject'].queryset = Subject.objects.filter(grade=student.grade).order_by('subject_name')
+            except (ValueError, TypeError):
+                pass  # invalid input from the client; ignore and fallback to empty City queryset
+        elif self.instance.pk:
+            self.fields['subject'].queryset = self.instance.subjectscores.subject_id_set.order_by('subject_id')
 
     class Meta:
         model = SubjectScores

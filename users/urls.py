@@ -75,6 +75,7 @@ urlpatterns = [
 
     path('subject/scores', SubjectScoresListView.as_view(), name='subject-scores-list'),
     path('subject/scores/<int:pk>', SubjectScoresDetailView.as_view(), name='subject-scores-detail'),
+    path('ajax/load-subjects/', views.load_subjects, name='ajax_load_subjects'),  # <-- this one here
     #url(r'^subject/select/', views.show_choices, name="career-select"),
     url(r'^subject/scores/new/', SubjectScoresCreateView.as_view(), name="subject-scores-new"),
 
