@@ -452,13 +452,13 @@ class TeacherUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     fields = ['first_name', 'last_name', 'school_id', 'email',  'grade', 'section', 'spoken_lang']
 
     def form_valid(self, form):
-        form.instance.user.teacher = self.request.user.teacher
+        form.instance.user = self.request.user
         messages.success(self.request, 'Teacher successfully updated.')
         return super().form_valid(form)
 
     def test_func(self):
         teacher = self.get_object()
-        if self.request.user.teacher == teacher:
+        if self.request.user.is_teacher or self.request.user.is_superuser:
             return True
         return False
 

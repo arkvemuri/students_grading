@@ -35,20 +35,20 @@ def home(request):
 
     paginate_by = 4
     paginator = Paginator(subjects_list, paginate_by)
-    paginator1=Paginator(students_list, paginate_by)
+    #paginator1=Paginator(students_list, paginate_by)
     page = request.GET.get('page')
     try:
         subjects = paginator.page(page)
-        students = paginator1.page(page)
+        #students = paginator1.page(page)
     except PageNotAnInteger:
         subjects = paginator.page(1)
-        students = paginator1.page(1)
+        #students = paginator1.page(1)
     except EmptyPage:
         subjects = paginator.page(paginator.num_pages)
-        students = paginator1.page(paginator.num_pages)
+        #students = paginator1.page(paginator.num_pages)
 
     args['subjects'] = subjects
-    args['students'] = students
+    args['students'] = students_list
 
     args['teachers'] = teachers_list
     try:

@@ -14,7 +14,7 @@
 {% if user.is_superuser %}
     <div class="content-section">
         <h3>Manage Students</h3>
-        <a class="btn btn-outline-info mb-4" href="{% url 'teacher-student-delete' object.id %}">Delink {{ teacher_students.student_id }} Student ID</a>
+        <a class="btn btn-danger mb-4" href="{% url 'teacher-student-delete' object.id %}">Delink {{ teacher_students.student_id }} Student ID</a>
     </div>
 {% endif %}
 {% endblock %}

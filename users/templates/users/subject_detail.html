@@ -12,8 +12,8 @@
     {% if user.is_superuser %}
         <div class="content-section">
             <h3>Manage Subjects</h3>
-            <a class="btn btn-outline-info mb-4" href="{% url 'subject-update' object.id %}">Update {{ subject.subject_name }} Details</a>
-            <a class="btn btn-outline-info mb-4" href="{% url 'subject-delete' object.id %}">Delete {{ subject.subject_name }} Subject</a>
+            <a class="btn btn-success mb-4" href="{% url 'subject-update' object.id %}">Update {{ subject.subject_name }} Details</a>
+            <a class="btn btn-danger mb-4" href="{% url 'subject-delete' object.id %}">Delete {{ subject.subject_name }} Subject</a>
         </div>
     {% endif %}
 {% endif %}
