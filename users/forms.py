@@ -56,7 +56,7 @@ class StudentRegistrationForm(UserCreationForm):
     #username = forms.RegexField(label='Username', max_length=30, regex=r'^[\w-]+$', error_messages='This value must contain only letters, numbers, hyphens and underscores.')
     first_name = forms.CharField(max_length=15, initial='Abhinav')
     last_name = forms.CharField(max_length=15, initial='Vemuri')
-    email = forms.EmailField(max_length=30, initial='abhi@gmail.com')
+    email = forms.EmailField(max_length=60, initial='abhi@gmail.com')
     school_id = forms.ModelChoiceField(queryset=School.objects.all(),empty_label=None,label='Your School') #CharField(max_length=50, initial='Oakridge International School (Newton Campus)', label='Your School')
     student_id = forms.CharField(max_length=8, initial='15H7115', label=' Student ID')
     grade = forms.CharField(max_length=2, initial='X')
@@ -82,7 +82,7 @@ class StudentRegistrationForm(UserCreationForm):
         self.fields['password2'].widget.attrs['style'] = "width:15rem"
         self.fields['first_name'].widget.attrs['style'] = "width:15rem"
         self.fields['last_name'].widget.attrs['style'] = "width:15rem"
-        self.fields['email'].widget.attrs['style'] = "width:15rem"
+        #self.fields['email'].widget.attrs['style'] = "width:15rem"
         self.fields['dob'].widget.attrs['style'] = "width:10rem"
         self.fields['student_id'].widget.attrs['style'] = "width:10rem"
         self.fields['grade'].widget.attrs['style'] = "width:10rem"
@@ -162,7 +162,7 @@ class StudentUpdateForm(UserChangeForm):
         fields = ['first_name', 'last_name', 'email']
 
 class TeacherRegistrationForm(UserCreationForm):
-    email = forms.EmailField(max_length=30, initial='rkvemuri2000@yahoo.com')
+    email = forms.EmailField(max_length=60, initial='rkvemuri2000@yahoo.com')
     first_name = forms.CharField(max_length=30, initial='Ramakrishna')
     last_name = forms.CharField(max_length=30, initial='Vemuri')
     grade = forms.CharField(max_length=2, initial='X')
@@ -179,7 +179,7 @@ class TeacherRegistrationForm(UserCreationForm):
         self.fields['password2'].widget.attrs['style'] = "width:15rem"
         self.fields['first_name'].widget.attrs['style'] = "width:15rem"
         self.fields['last_name'].widget.attrs['style'] = "width:15rem"
-        self.fields['email'].widget.attrs['style'] = "width:15rem"
+        #self.fields['email'].widget.attrs['style'] = "width:60rem"
         self.fields['grade'].widget.attrs['style'] = "width:10rem"
         self.fields['subject'].widget.attrs['style'] = "width:10rem"
 

@@ -18,9 +18,9 @@ class School(models.Model):
     school_name = models.CharField(max_length=60, default='Oakridge International School (Newton Campus)')
     school_id = models.CharField(max_length=8, primary_key=True)
     date_created = models.DateTimeField(default=timezone.now)
-    address = models.CharField(max_length=40, default='Nanakramguda Road, Cyberabad, Khajaguda, Manikonda')
+    address = models.CharField(max_length=60, default='Nanakramguda Road, Cyberabad, Khajaguda, Manikonda')
     city = models.CharField(max_length=20,default='Hyderabad')
-    state = models.CharField(max_length=15, default='Telangana')
+    state = models.CharField(max_length=25, default='Telangana')
     postal_code = models.IntegerField(default=500008)
     country = models.CharField(max_length=15,default='India')
 
@@ -36,7 +36,7 @@ class Student(models.Model):
     school_id = models.ForeignKey(School, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=30, default='Abhinav')
     last_name = models.CharField(max_length=30, default='Vemuri')
-    email = models.CharField(max_length=30, default='abhi@gmail.com')
+    email = models.CharField(max_length=60, default='abhi@gmail.com')
     grade = models.CharField(max_length=2, default='X')
     gender = models.CharField(max_length=1,default='M')
     section = models.CharField(max_length=1,default='A')
@@ -48,8 +48,8 @@ class Student(models.Model):
     spoken_lang = models.CharField(max_length=20,default='Telugu,English')
     address = models.CharField(max_length=30, default='Lanco Hills 4LH 1504 Manikonda')
     city = models.CharField(max_length=30,default='Hyderabad')
-    state = models.CharField(max_length=15,default='Telangana')
-    country = models.CharField(max_length=15,default='India')
+    state = models.CharField(max_length=25,default='Telangana')
+    country = models.CharField(max_length=25,default='India')
     date_created = models.DateTimeField(default=timezone.now)
     GPA = models.FloatField(max_length=5, default=0.0)
 
@@ -61,7 +61,7 @@ class Student(models.Model):
 
 
 class Subject(models.Model):
-    subject_name = models.CharField(max_length=30)
+    subject_name = models.CharField(max_length=60)
     subject_desc = models.CharField(max_length=120)
     school_id = models.ForeignKey(School, on_delete=models.CASCADE)
     grade = models.CharField(max_length=2)
@@ -109,9 +109,9 @@ class Teacher(models.Model):
     last_name = models.CharField(max_length=30, default='Vemuri')
     grade = models.CharField(max_length=2, default='X')
     section = models.CharField(max_length=3,default='A')
-    email = models.CharField(max_length=30, default='rkvemuri2000@yahoo.com')
+    email = models.CharField(max_length=60, default='rkvemuri2000@yahoo.com')
     mobile = models.CharField(max_length=14,default='9000600534')
-    spoken_lang = models.CharField(max_length=20,default='Telugu,English,Hindi')
+    spoken_lang = models.CharField(max_length=30,default='Telugu,English,Hindi')
     date_created = models.DateTimeField(default=timezone.now)
 
     def __str__(self):

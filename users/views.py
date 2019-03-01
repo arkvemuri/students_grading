@@ -116,7 +116,11 @@ def formView(request):
 def loginUser(request):
     username = request.POST.get('username')
     password = request.POST.get('password')
+
     user = authenticate(request, username=username, password=password)
+    # if user.has_usable_password:
+    #     request.session['username']=user.username
+    #     return render(request,'grading/home.html',"You're logged in.")
     if user is not None:
         login(request, user)
 
@@ -803,7 +807,11 @@ class MainView(TemplateView):
         if 'student' in subjectscores_form.data:
             try:
                 student_id = subjectscores_form.data.get('student')
+                # if 'student' in request.session:
+                #     student = request.session['student']
+                # else:
                 student = Student.objects.filter(student_id=student_id).first()
+                #request.session['student']=student
                 subjectscores_form.fields['subject'].queryset = Subject.objects.filter(grade=student.grade).order_by('subject_name')
             except (ValueError, TypeError):
                 pass  # invalid input from the client; ignore and fallback to empty City queryset
@@ -813,7 +821,7 @@ class MainView(TemplateView):
             student = request.POST.get('student')
             subject_id = request.POST.get('subject')
             subject_score = request.POST.get('subject_score')
-            if (int(subject_score) < 50):
+            if (float(subject_score) < 50.0):
                 courses = Courses.objects.filter(subject=subject_id)
                 context['courses'] = courses
                 subject= Subject.objects.filter(pk=subject_id).first()
