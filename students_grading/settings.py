@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django_tables2',
     'django_filters',
     'bootstrap4',
+    'bootstrap_datepicker',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -173,6 +174,7 @@ USE_TZ = True
 
 #STATIC_URL = 'https://storage.googleapis.com/students_grading/static/'
 STATIC_URL = '/static/'
+STATIC_ROOT= os.path.join(BASE_DIR, 'static')
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
@@ -226,6 +228,9 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config.get('EMAIL_USER')
 EMAIL_HOST_PASSWORD = config.get('EMAIL_PASS')
 
-
+# Use BOOTSTRAP3 if you are using Bootstrap 3
+BOOTSTRAP4 = {
+    'include_jquery': True,
+}
 AUTH_USER_MODEL = "users.User"
 DJANGO_TABLES2_TEMPLATE = "django_tables2/bootstrap4.html"
