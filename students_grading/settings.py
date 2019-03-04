@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     'django_tables2',
     'django_filters',
     'bootstrap4',
-    'bootstrap_datepicker',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
