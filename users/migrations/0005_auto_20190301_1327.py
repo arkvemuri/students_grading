@@ -6,10 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0004_auto_20190226_1104'),
+        #('users', '0004_auto_20190226_1104'),
+        ('users', '0001_initial'),
     ]
-
     operations = [
+        migrations.AlterField(
+            model_name='subject',
+            name='subject_desc',
+            field=models.CharField(max_length=120),
+        ),
         migrations.AlterField(
             model_name='school',
             name='address',

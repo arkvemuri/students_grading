@@ -122,6 +122,15 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
+            name='Courses',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('course_name', models.CharField(max_length=50)),
+                ('course_link', models.CharField(max_length=100)),
+                ('subject', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='users.Subject')),
+            ],
+        ),
+        migrations.CreateModel(
             name='UserProfile',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),

@@ -790,7 +790,7 @@ class UserSubjectListView(ListView):
         return Subject.objects.filter(username=user)
 
 
-class MainView(TemplateView):
+class MainView(LoginRequiredMixin,TemplateView):
     template_name = 'users/career_options.html'
 
     def get(self, request, *args, **kwargs):
