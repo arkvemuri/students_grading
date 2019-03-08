@@ -1,0 +1,21 @@
+{% extends "grading/base.html" %}
+{% block content %}
+<form action="{% url 'upload-reports' %}" method="POST" enctype="multipart/form-data" class="form-horizontal">
+{% csrf_token %}
+
+<div class="form-group">
+    <br>
+    <div class="col-4">
+        Student&nbsp;ID<input type="input" name="student_id" id="id_student" value = "{{ students.student_id }}" required="True" class="form-control">
+    </div>
+    <br>
+    <div class="col-4">
+        Report File:<input type="file" name="pdf_file" id="pdf_file" required="True" class="form-control">
+    </div>
+    <br>
+    <div class="col-4" style="margin-bottom:10px;">
+         <button class="btn btn-primary"> <span class="glyphicon glyphicon-upload" style="margin-right:5px;"></span>Upload </button>
+    </div>
+    <p><a href="{% url 'grading-home' %}">Return to home</a></p>
+</div>
+{% endblock content %}

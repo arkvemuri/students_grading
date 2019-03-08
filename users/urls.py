@@ -42,7 +42,9 @@ from .views import(
     CoursesDetailView,
     CoursesUpdateView,
     CoursesListView,
+    StudentReportsView,
 )
+#from django.conf import settings
 
 urlpatterns = [
     path('student/grades', StudentGradesView.as_view(), name='teacher-student-grades'),
@@ -56,13 +58,15 @@ urlpatterns = [
     url(r'^student/(?P<pk>[\w-]+)/delete/', StudentDeleteView.as_view(), name='student-delete'),
     url(r'^student/list/', StudentListView.as_view(), name='student-list'),
     url(r'^student/(?P<pk>[\w-]+)/$', StudentDetailView.as_view() , name='student-detail'),
+    url(r'^student/reports/view/', views.StudentReportsView , name='student-reports'),
+    path('students/reports/upload/', views.UploadReports, name='upload-reports'),
 
-    path('teacher_student/new/', TeacherStudentsCreateView.as_view(), name='link-teacher-student'),
+    path('teacher/student/new/', TeacherStudentsCreateView.as_view(), name='link-teacher-student'),
     #path('teacher_student/', TeacherStudentListView.as_view(), name='teacher-student-list'),
     #path('teacher_student/list/', views.teacher_students_list, name='list-teacher-students'),
     path('teacher/student/list/', TeacherStudentsListView.as_view(), name='list-teacher-students'),
-    path('teacher_student/<int:pk>/', TeacherStudentsDetailView.as_view(), name='teacher-student-detail'),
-    url(r'^teacher_student/(?P<pk>[\w-]+)/delete/', TeacherStudentsDeleteView.as_view(), name='teacher-student-delete'),
+    path('teacher/student/<int:pk>/', TeacherStudentsDetailView.as_view(), name='teacher-student-detail'),
+    url(r'^teacher/student/(?P<pk>[\w-]+)/delete/', TeacherStudentsDeleteView.as_view(), name='teacher-student-delete'),
 
     path('signup/', SignUpView.as_view(), name='signup'),
     path('signup/student/new/', StudentSignUpView.as_view(), name='student_signup'),

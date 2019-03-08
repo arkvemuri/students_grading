@@ -12,6 +12,12 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 import json
+# import sentry_sdk
+# from sentry_sdk.integrations.django import DjangoIntegration
+#
+# sentry_sdk.init(
+#     dsn="https://b842cb76bd804f8886612e9eb572ceba@sentry.io/1407935",
+#     integrations=[DjangoIntegration()])
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -28,7 +34,7 @@ SECRET_KEY = config['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['www.studentsgrading.co.in','localhost','studentsgrading.appspot.com']
+ALLOWED_HOSTS = ['www.studentsgrading.co.in','localhost']
 
 
 # Application definition
@@ -47,6 +53,9 @@ INSTALLED_APPS = [
     'django_tables2',
     'django_filters',
     'bootstrap4',
+    'jquery',
+    'tempus_dominus',
+    'bootstrap_datepicker',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -87,6 +96,7 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.media',
                 'django.contrib.messages.context_processors.messages',
                 'social_django.context_processors.backends',  # <--
                 'social_django.context_processors.login_redirect', # <--

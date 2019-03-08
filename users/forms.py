@@ -2,13 +2,12 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from .models import User, Student, Teacher, UserProfile, School,  Student_Grades, Subject, Teacher_Students,Courses, SubjectScores
 from django.db import transaction
-from django.forms import ModelChoiceField
-from django.utils.html import mark_safe
-from django.urls import reverse
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Button, ButtonHolder, Submit
 from crispy_forms.bootstrap import *
 from django.core.exceptions import ValidationError
+from tempus_dominus.widgets import DatePicker, TimePicker, DateTimePicker
+import datetime
 
 class UserRegistrationForm(UserCreationForm):
     email = forms.EmailField()
@@ -42,59 +41,49 @@ class GradingForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(GradingForm, self).__init__(*args, **kwargs)
-        self.fields['student_id'].widget.attrs['style'] = "width:10rem"
-        self.fields['subject_name'].widget.attrs['style'] = "width:10rem"
-        self.fields['failures'].widget.attrs['style'] = "width:10rem"
-        self.fields['mother_edu'].widget.attrs['style'] = "width:10rem"
-        self.fields['fjob_teacher'].widget.attrs['style'] = "width:10rem"
-        self.fields['father_edu'].widget.attrs['style'] = "width:10rem"
-        self.fields['age'].widget.attrs['style'] = "width:10rem"
-        self.fields['schoolsup_yes'].widget.attrs['style'] = "width:10rem"
-        self.fields['higher_yes'].widget.attrs['style'] = "width:10rem"
+        for key_name in self.fields:
+            self.fields[key_name].widget.attrs['style'] = "width:10rem"
 
 class StudentRegistrationForm(UserCreationForm):
-    #username = forms.RegexField(label='Username', max_length=30, regex=r'^[\w-]+$', error_messages='This value must contain only letters, numbers, hyphens and underscores.')
-    first_name = forms.CharField(max_length=15, initial='Abhinav')
-    last_name = forms.CharField(max_length=15, initial='Vemuri')
-    email = forms.EmailField(max_length=60, initial='abhi@gmail.com')
+    first_name = forms.CharField(max_length=15)
+    last_name = forms.CharField(max_length=15)
+    email = forms.EmailField(max_length=60)
     school_id = forms.ModelChoiceField(queryset=School.objects.all(),empty_label=None,label='Your School') #CharField(max_length=50, initial='Oakridge International School (Newton Campus)', label='Your School')
-    student_id = forms.CharField(max_length=8, initial='15H7115', label=' Student ID')
-    grade = forms.CharField(max_length=2, initial='X')
-    section = forms.CharField(max_length=1, initial='A')
-    gender = forms.CharField(max_length=1, initial='M')
-    age = forms.CharField(required=False,max_length=10, initial='14 Years')
-    mobile = forms.CharField(required=False,max_length=10, initial= '7981764023')
-    dob = forms.CharField(max_length=10, initial='24-05-2004', label='Date of Birth')
-    religion = forms.CharField(required=False,max_length=10, initial='Hindu')
-    spoken_lang = forms.CharField(required=False,max_length=20, initial='Telugu, English')
-    address = forms.CharField(widget=forms.Textarea(attrs={'rows': 1, 'cols': 85}), max_length=160)
-    city = forms.CharField(required=False,max_length=20, initial='Hyderabad')
-    state = forms.CharField(required=False,max_length=20, initial='Telangana')
-    country = forms.CharField(required=False,max_length=20, initial='India')
+    student_id = forms.CharField(max_length=8, label=' Student ID')
+    grade = forms.CharField(max_length=2)
+    section = forms.CharField(max_length=1)
+    gender = forms.CharField(max_length=1)
+    age = forms.CharField(required=False,max_length=10)
+    mobile = forms.CharField(required=False,max_length=10)
+    dob=forms.DateTimeField(
+        widget=DateTimePicker(
+            options={
+                'minDate': (datetime.date.today() + datetime.timedelta(days=1)).strftime('%Y-%m-%d'),  # Tomorrow
+                'useCurrent': True,
+                'collapse': False,
+            },
+            attrs={
+               'append': 'fa fa-calendar',
+               'input_toggle': False,
+               'icon_toggle': True,
+            }
+        ),
+    )
+    religion = forms.CharField(required=False,max_length=20)
+    spoken_lang = forms.CharField(required=False,max_length=30)
+    address = forms.CharField(widget=forms.Textarea(attrs={'rows': 3, 'cols': 85}), max_length=160)
+    city = forms.CharField(required=False,max_length=30, initial='Hyderabad')
+    state = forms.CharField(required=False,max_length=30, initial='Telangana')
+    country = forms.CharField(required=False,max_length=30, initial='India')
+
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super(StudentRegistrationForm, self).__init__(*args, **kwargs)
-        self.fields['username'].widget.attrs['style'] = "width:15rem"
-        self.fields['username'].initial=self.request.user.username
-        self.fields['username'].help_text = False
-        self.fields['password1'].widget.attrs['style'] = "width:15rem"
-        self.fields['password2'].widget.attrs['style'] = "width:15rem"
-        self.fields['first_name'].widget.attrs['style'] = "width:15rem"
-        self.fields['last_name'].widget.attrs['style'] = "width:15rem"
-        #self.fields['email'].widget.attrs['style'] = "width:15rem"
-        self.fields['dob'].widget.attrs['style'] = "width:10rem"
-        self.fields['student_id'].widget.attrs['style'] = "width:10rem"
-        self.fields['grade'].widget.attrs['style'] = "width:10rem"
-        self.fields['gender'].widget.attrs['style'] = "width:3rem"
-        self.fields['age'].widget.attrs['style'] = "width:10rem"
-        self.fields['religion'].widget.attrs['style'] = "width:10rem"
-        self.fields['section'].widget.attrs['style'] = "width:10rem"
-        self.fields['spoken_lang'].widget.attrs['style'] = "width:10rem"
-        self.fields['mobile'].widget.attrs['style'] = "width:10rem"
-        self.fields['city'].widget.attrs['style'] = "width:10rem"
-        self.fields['state'].widget.attrs['style'] = "width:10rem"
-        self.fields['country'].widget.attrs['style'] = "width:10rem"
+
+        #for key_name in self.fields:
+            #self.fields[key_name].widget.attrs['style'] = "width:15rem"
+
 
     class Meta(UserCreationForm.Meta):
         model = User
@@ -172,16 +161,9 @@ class TeacherRegistrationForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super(TeacherRegistrationForm, self).__init__(*args, **kwargs)
-        self.fields['username'].initial = self.request.user.username
-        self.fields['username'].help_text=False
-        self.fields['username'].widget.attrs['style'] = "width:15rem"
-        self.fields['password1'].widget.attrs['style'] = "width:15rem"
-        self.fields['password2'].widget.attrs['style'] = "width:15rem"
-        self.fields['first_name'].widget.attrs['style'] = "width:15rem"
-        self.fields['last_name'].widget.attrs['style'] = "width:15rem"
-        #self.fields['email'].widget.attrs['style'] = "width:60rem"
-        self.fields['grade'].widget.attrs['style'] = "width:10rem"
-        self.fields['subject'].widget.attrs['style'] = "width:10rem"
+        for key_name in self.fields:
+            self.fields[key_name].widget.attrs['style'] = "width:15rem"
+
 
     class Meta(UserCreationForm.Meta):
         model = User
@@ -295,14 +277,11 @@ class Student_GradesForm(forms.ModelForm):
     SA3 = forms.FloatField(required=False,initial=0.0)
     teacher = forms.ChoiceField(widget=forms.Select)
 
+
     def __init__(self, *args, **kwargs):
         super(Student_GradesForm, self).__init__(*args, **kwargs)
-        self.fields['student'].widget.attrs['style'] = "width:15rem"
-        self.fields['subject'].widget.attrs['style'] = "width:15rem"
-        self.fields['SA1'].widget.attrs['style'] = "width:15rem"
-        self.fields['SA2'].widget.attrs['style'] = "width:15rem"
-        self.fields['SA3'].widget.attrs['style'] = "width:15rem"
-        self.fields['teacher'].widget.attrs['style'] = "width:15rem"
+        for key_name in self.fields:
+            self.fields[key_name].widget.attrs['style'] = "width:15rem"
 
     class Meta:
         model = Student_Grades
@@ -312,10 +291,8 @@ class SubjectScoresForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(SubjectScoresForm, self).__init__(*args, **kwargs)
-
-        self.fields['student'].widget.attrs['style'] = "width:15rem"
-        self.fields['subject'].widget.attrs['style'] = "width:15rem"
-        self.fields['subject_score'].widget.attrs['style'] = "width:15rem"
+        for key_name in self.fields:
+            self.fields[key_name].widget.attrs['style'] = "width:15rem"
 
         self.helper = FormHelper(self)
 
@@ -340,13 +317,7 @@ class CoursesForm(forms.ModelForm):
     courses = Courses.objects.all()
     choices = [(obj.pk, obj.course_name) for obj in courses]
     subject=forms.ModelChoiceField(queryset=Subject.objects.all())
-    # course_name = forms.TypedChoiceField(
-    #     label="Course List",
-    #     choices=choices,
-    #     coerce=lambda x: int(x),
-    #     widget=forms.RadioSelect,
-    #     required=True,
-    # )
+
     course_name=forms.CharField()
     course_link=forms.CharField(label='Link to Course')
 
@@ -356,10 +327,3 @@ class CoursesForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(CoursesForm, self).__init__(*args, **kwargs)
-        #self.fields['subject'].widget.attrs['style'] = "width:15rem"
-
-        #self.helper = FormHelper(self)
-        #self.helper.add_input(Submit('submit', 'Select'))
-        #self.helper.layout = Layout(
-        #    Div(InlineRadios('course_name')),
-        #)

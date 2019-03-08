@@ -12,7 +12,8 @@ from django.contrib.auth.decorators import login_required
 from users.models import User, Student, Teacher, Student_Grades, Teacher_Students, Subject,SubjectScores
 from django.template import RequestContext
 import datetime
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 def grading(request):
@@ -25,7 +26,7 @@ def grading(request):
         return render(request, "grading/grading_results.html", context)
     return render(request, 'grading/grading.html')
 
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 @login_required
 def home(request):
     args = {}
@@ -96,37 +97,8 @@ def home(request):
     else:
         response= render(request, 'users/login.html', args)
 
-    response.set_cookie('last_connection', datetime.datetime.now())
-    response.set_cookie('username', datetime.datetime.now())
-
     return response
-# GRADES = [85, 92, 96, 67, 73]
-def numerical_grade(grades):
-    return (sum(grades) / float(len(grades))) / 100
 
-# GRADE = 0.75
-def letter_grade(grade):
-    grades = 'ABCDFFFFFF'
-    if grade > 0:
-        return grades[10 - ceil(grade * 10)]
-    else:
-        return 'F'
-
-def gradeScores(FinalGrade):
-    if FinalGrade >= 90 and FinalGrade <= 100:
-        return("You received an A")
-
-    elif FinalGrade >= 80 and FinalGrade < 90:
-        return("You received a B")
-
-    elif FinalGrade >= 70 and FinalGrade < 80:
-        return("You received a C")
-
-    elif FinalGrade >= 60 and FinalGrade < 70:
-        return("You received a D")
-
-    else:
-        return("Sorry, you received an F")
 
 def about(request):
     return render(request,'grading/about.html',{'title': 'Grading About'})

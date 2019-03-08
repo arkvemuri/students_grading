@@ -1,0 +1,13 @@
+{% extends 'grading/base.html' %}
+
+{% load static %}
+
+{% block content %}
+    <div class="content-section">
+      <div class="media">
+
+        <iframe width='1000' height='800' src='{{ MEDIA_URL }}{{ image_url }}' frameborder='0' allowfullscreen></iframe>
+
+      </div>
+    </div>
+{% endblock %}

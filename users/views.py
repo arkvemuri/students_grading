@@ -19,7 +19,8 @@ from django.views.generic import (
     DetailView,
     CreateView,
     DeleteView,
-    UpdateView
+    UpdateView,
+    View,
 )
 from django.contrib.auth.views import LogoutView
 from django.views.generic import TemplateView
@@ -38,6 +39,8 @@ from django.urls import reverse_lazy
 from django_tables2.config import RequestConfig
 from .tables import *
 from django.http import JsonResponse
+import os
+
 
 @login_required
 def home(request):
@@ -97,30 +100,11 @@ class TeacherSignUpView(CreateView):
         return redirect('teacher-list')
     success_url = '/'
 
-def formView(request):
-    if 'username' in request.COOKIES and 'last_connection' in request.COOKIES:
-        username = request.COOKIES['username']
-
-        last_connection = request.COOKIES['last_connection']
-        last_connection_time = datetime.strptime(last_connection[:-7],
-                                                          "%Y-%m-%d %H:%M:%S")
-
-        if (datetime.now() - last_connection_time).seconds < 10:
-            return render(request, 'grading-home', {"username": username})
-        else:
-            return render(request, 'users/login.html', {})
-
-    else:
-        return render(request, 'users/login.html', {})
-
 def loginUser(request):
     username = request.POST.get('username')
     password = request.POST.get('password')
 
     user = authenticate(request, username=username, password=password)
-    # if user.has_usable_password:
-    #     request.session['username']=user.username
-    #     return render(request,'grading/home.html',"You're logged in.")
     if user is not None:
         login(request, user)
 
@@ -258,14 +242,6 @@ class StudentDetailView(LoginRequiredMixin,DetailView):
     template_name = 'users/student_detail.html'
     context_object_name = 'student'
 
-def student_detail(request, pk):
-    student = get_object_or_404(Student, pk=pk)
-    return render(request, 'users/student_detail.html', {'student': student})
-
-def teacher_detail(request, pk):
-    teacher = get_object_or_404(Teacher, pk=pk)
-    return render(request, 'users/teacher_detail.html', {'teacher': teacher})
-
 class StudentCreateView(CreateView):
     model = Student
 
@@ -276,7 +252,6 @@ class StudentCreateView(CreateView):
     def form_valid(self, form):
         form.instance.student = self.request.user
         return super().form_valid(form)
-        #return redirect('user-home')
 
 class StudentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Student
@@ -302,6 +277,30 @@ class StudentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         if self.request.user.is_superuser:
             return True
         return False
+
+from django.http import HttpResponse
+import pandas as pd
+from django.core.files.storage import FileSystemStorage
+
+def UploadReports(request):
+    if request.method == 'POST':
+        pdf_file = request.FILES['pdf_file']
+        student_id=request.POST.get('student_id')
+
+        #data = pd.read_csv(os.path.join(basedir, pdf_file.name))
+        fs = FileSystemStorage()
+        filename = fs.save(pdf_file.name, pdf_file)
+        uploaded_file_url = fs.url(filename)
+        messages.success(request,"Your report has been uploaded successfully")
+        return render(request, "users/reports.html", {
+            'uploaded_file_url': uploaded_file_url
+        })
+    return render(request, 'users/reports.html')
+
+def StudentReportsView(request):
+    student = Student.objects.filter(user=request.user).first()
+    image_url = student.student_id+".pdf"
+    return render(request, 'users/simple_upload.html', {'image_url': image_url})
 
 class StudentGradesView(TemplateView):
     template_name = 'users/grades.html'
@@ -807,11 +806,7 @@ class MainView(LoginRequiredMixin,TemplateView):
         if 'student' in subjectscores_form.data:
             try:
                 student_id = subjectscores_form.data.get('student')
-                # if 'student' in request.session:
-                #     student = request.session['student']
-                # else:
                 student = Student.objects.filter(student_id=student_id).first()
-                #request.session['student']=student
                 subjectscores_form.fields['subject'].queryset = Subject.objects.filter(grade=student.grade).order_by('subject_name')
             except (ValueError, TypeError):
                 pass  # invalid input from the client; ignore and fallback to empty City queryset
@@ -830,24 +825,3 @@ class MainView(LoginRequiredMixin,TemplateView):
                 else:
                     messages.error(request, f'No Courses exist')
         return self.render_to_response(context)
-
-# class SubjectScores_FormView(FormView):
-#     form_class = SubjectScoresForm
-#     template_name = 'users/courses_list.html'
-#     success_url = '/'
-#
-#     def post(self, request, *args, **kwargs):
-#         subjectscores_form = self.form_class(request.POST)
-#         if subjectscores_form.is_valid():
-#             subjectscores_form.save()
-#             return self.render_to_response(
-#                 self.get_context_data(
-#                     success=True
-#                 )
-#             )
-#         else:
-#             return self.render_to_response(
-#                 self.get_context_data(
-#                     subjectscores_form=subjectscores_form
-#                 )
-#             )
