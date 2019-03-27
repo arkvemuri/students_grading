@@ -663,9 +663,7 @@ class SubjectScoresDetailView(DetailView):
 
 def load_subjects(request):
     student_id = request.GET.get('student')
-
     student = Student.objects.filter(student_id=student_id).first()
-
     subjects = Subject.objects.filter(grade=student.grade).order_by('subject_name')
     return render(request, 'users/subject_dropdown_list_options.html', {'subjects': subjects})
 
@@ -793,13 +791,14 @@ class MainView(LoginRequiredMixin,TemplateView):
     template_name = 'users/career_options.html'
 
     def get(self, request, *args, **kwargs):
-        subjectscores_form = SubjectScoresForm(self.request.GET or None)
+        subjectscores_form = SubjectScoresForm(request.GET or None)
         context = self.get_context_data(**kwargs)
+        subjectscores_form.fields['subject'].queryset = Subject.objects.all()
         context['subjectscores_form'] = subjectscores_form
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
-        subjectscores_form = SubjectScoresForm(self.request.POST)
+        subjectscores_form = SubjectScoresForm(request.POST)
         context = self.get_context_data(**kwargs)
 
         context['subjectscores_form'] = subjectscores_form
